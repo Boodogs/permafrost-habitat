@@ -34,7 +34,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Setup Ruby
-        run:
+        run: |
           sudo apt-get update
           sudo apt-get install -y rbenv
           rbenv init -
