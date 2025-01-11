@@ -31,7 +31,7 @@ jobs:
         with:
           ruby-version: 3.1.4
       - name: Install dependencies
-        run: bundle install
+        run: bundle install --gemfile ./Gemfile
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
