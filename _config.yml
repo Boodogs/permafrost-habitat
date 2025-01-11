@@ -1,0 +1,8 @@
+title: Permafrost Habitat
+description: A site about wildlife habitat in NW Canadian permafrost regions
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://boodogs.github.io/permafrost-habitat" # the base hostname & protocol for your site
+theme: minima
+
+# Build settings
+markdown: kramdown
