@@ -2,8 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Map-first homepage · live</title>
+<title>Logan McLeod — Landscape change &amp; wildlife habitat</title>
+<meta name="description" content="PhD research on landscape change and wildlife habitat across northern Canada — beavers, moose, songbirds, chickadees."/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<!-- Social / link-preview cards -->
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Logan McLeod"/>
+<meta property="og:title" content="Logan McLeod — Landscape change &amp; wildlife habitat"/>
+<meta property="og:description" content="PhD research on landscape change and wildlife habitat across northern Canada — beavers, moose, songbirds, chickadees."/>
+<meta property="og:url" content="https://boodogs.github.io/permafrost-habitat/"/>
+<meta property="og:image" content="https://boodogs.github.io/permafrost-habitat/og-image.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Logan McLeod — Landscape change &amp; wildlife habitat"/>
+<meta name="twitter:description" content="PhD research on landscape change and wildlife habitat across northern Canada — beavers, moose, songbirds, chickadees."/>
+<meta name="twitter:image" content="https://boodogs.github.io/permafrost-habitat/og-image.png"/>
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png"/>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"/>
 <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png"/>
@@ -143,7 +156,7 @@
     .stage { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; min-height: 100vh; }
     /* Make the map area a flex column so the nameplate can sit above the map */
     .stage > div:first-child { display: flex; flex-direction: column; }
-    #map { height: 55vh; min-height: 320px; order: 2; }
+    #map { height: 55vh; min-height: 320px; order: 3; }
     .nameplate {
       position: static; order: 1;
       max-width: none; padding: 12px 16px;
@@ -156,8 +169,18 @@
     .nameplate .lab-logo { display: inline-block; margin-top: 8px; }
     .nameplate .lab-logo img { height: 22px; }
     .nameplate .menu { margin-top: 8px; gap: 12px; font-size: 10px; }
-    .layers { top: 8px; right: 8px; padding: 6px 8px; font-size: 9px; }
+    /* Legend → horizontal strip between nameplate and map */
+    .layers {
+      position: static; order: 2;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+      padding: 8px 16px;
+      border: none; border-bottom: 1.5px solid var(--ink);
+      background: var(--bg);
+      font-size: 10px;
+    }
+    .layers .row { padding: 0; }
     .layers .swatch { width: 11px; height: 11px; }
+    .layers .basemap { margin: 0; padding: 0 0 0 12px; border-top: none; border-left: 1px dashed #ccc; }
     .panel { border-left: none; border-top: 1.5px solid var(--ink); padding: 18px 16px; min-height: 40vh; }
     .panel .title { font-size: 28px; }
     .pin-label { font-size: 9px; padding: 1px 4px; }
@@ -165,6 +188,7 @@
   @media (max-width: 480px) {
     .nameplate .name { font-size: 20px; }
     .nameplate .menu { gap: 10px; }
+    .layers { gap: 10px; font-size: 9.5px; }
     .layers .basemap select { font-size: 9px; }
   }
 </style>
