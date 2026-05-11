@@ -146,10 +146,6 @@ function SongbirdPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 28 }}>
-          <SbEmbedPlaceholder />
-        </div>
-
         <hr className="bv-divider" />
         <SbCiteContact />
       </main>
