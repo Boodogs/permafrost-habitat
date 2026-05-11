@@ -1,0 +1,12 @@
+# Build/scratch artifacts — not part of the published site
+uploads/
+_drafts/
+screenshots/
+scraps/
+.design-canvas.state.json
+.DS_Store
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db

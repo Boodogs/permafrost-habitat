@@ -1,0 +1,217 @@
+// Beaver Expansion — three layout variants of the same content.
+// Embeds uploads/beaver-forecast-viewer.html via iframe.
+
+const BV_TITLE = <>Beaver Expansion onto the <em>North Slope</em></>;
+const BV_DECK = "Tracking beaver occupancy of Arctic streams along the Yukon coast — combining satellite-detected dam ponds with field verification at Shingle Point and adjacent drainages.";
+
+const BV_TLDR_PARAS = [
+"Beavers are moving north. Across the western Arctic, dams and ponds are appearing in streams where, a generation ago, there were none. The implications for permafrost, hydrology, fish, and waterbird habitat are real, but the basic question — where, how fast, and into which streams — is still mostly open.",
+"This chapter combines two threads. The first is a remote-sensing record: high-resolution satellite imagery of the Yukon coast, scanned for the spectral and structural signatures of new dam-impounded ponds. The second is fieldwork at Shingle Point and adjacent drainages, where I verify detections, measure ponds, and document what beavers find when they get there.",
+"The forecast viewer below is one early product of that work — a simple per-dam offspring model, fit to a small number of seed colonies, projected forward over the network of suitable streams. It is deliberately rough; treating it as a thinking tool, not a prediction."];
+
+
+function BvHeader({ activeTab = 'research' }) {
+  const tabs = [
+  ['Research', 'research', 'index.html'],
+  ['Publications', 'publications', 'publications.html'],
+  ['Field Notes', 'fieldnotes', 'field-notes.html']];
+
+  return (
+    <header className="bv-header">
+      <div className="bv-wordmark">Logan McLeod<span className="dot"></span></div>
+      <nav className="bv-nav">
+        {tabs.map(([label, key, href]) =>
+        <a key={key} href={href} className={key === activeTab ? 'on' : ''}>{label}</a>
+        )}
+      </nav>
+    </header>);
+
+}
+
+function BvMetaBar() {
+  return (
+    <div className="bv-meta" style={{ marginTop: 24 }}>
+      <span className="chip"><span className="dot"></span>PhD chapter 01</span>
+      <span>Yukon North Slope</span>
+      <span>REMOTE SENSING</span>
+      <span>FIELD</span>
+    </div>);
+
+}
+
+function BvCiteContact() {
+  return (
+    <div className="bv-foot">
+      <div>
+        <h3>Contact</h3>
+        <div className="bv-contact">
+          <div>Logan McLeod</div>
+          <div style={{ color: 'var(--sub)' }}>PhD candidate · Arctic Landscape Ecology Lab</div>
+          <div style={{ marginTop: 8 }}><a href="mailto:loganmcleod@uvic.ca">loganmcleod@uvic.ca</a></div>
+          <div className="mono" style={{ fontSize: 12, color: 'var(--sub)', marginTop: 4 }}><a href="https://orcid.org/0000-0003-4528-1523" target="_blank" rel="noopener">orcid.org/0000-0003-4528-1523</a></div>
+        </div>
+      </div>
+    </div>);
+
+}
+
+function BvEmbed({ caption = true }) {
+  return (
+    <div className="bv-embed-wrap">
+      <iframe
+        className="bv-embed-frame"
+        src="uploads/beaver-forecast-viewer.html"
+        title="Beaver Expansion Forecast Viewer"
+        loading="lazy" />
+      
+      {caption &&
+      <div className="bv-embed-cap">
+          <span className="label">Fig. 1</span>
+          <span>Press <b>play</b> to watch ponds spread; drag the year scrubber to jump to a specific point.</span>
+          <span className="arrow">↳ tip: pan & zoom the map; the side panel summarizes detected ponds.</span>
+        </div>
+      }
+    </div>);
+
+}
+
+function BvHeroPhoto({ caption = "Tundra stream, Yukon North Slope", style = {}, imgStyle = {}, src = "images/shingle-point-stream.jpg" }) {
+  return (
+    <figure className="bv-hero-photo" style={style}>
+      <img src={src} alt={caption} style={imgStyle} />
+      <figcaption className="cap">{caption}</figcaption>
+    </figure>);
+
+}
+
+/* ============================================================
+   V1 — Embed-first
+   ============================================================ */
+function BeaverV1() {
+  return (
+    <div className="bv" style={{ minHeight: 1700 }}>
+      <BvHeader />
+      <main style={{ maxWidth: 1080, margin: '0 auto', padding: '40px 56px 80px' }}>
+        <BvMetaBar />
+        <h1 className="bv-title">{BV_TITLE}</h1>
+        <p className="bv-deck">{BV_DECK}</p>
+
+        <BvHeroPhoto style={{ height: 280, marginTop: 36 }} />
+
+        <div style={{ marginTop: 36 }}>
+          <BvEmbed />
+        </div>
+
+        <hr className="bv-divider" />
+
+        <div className="bv-prose" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+          <div>
+            <span className="small-cap">In short</span>
+            <p className="lead">{BV_TLDR_PARAS[0]}</p>
+          </div>
+          <div>
+            <p>{BV_TLDR_PARAS[1]}</p>
+            <p>{BV_TLDR_PARAS[2]}</p>
+          </div>
+        </div>
+
+        <hr className="bv-divider" />
+        <BvCiteContact />
+      </main>
+    </div>);
+
+}
+
+/* ============================================================
+   V2 — Story-first
+   ============================================================ */
+function BeaverV2() {
+  return (
+    <div className="bv" style={{ minHeight: 1900 }}>
+      <BvHeader />
+      <main style={{ maxWidth: 780, margin: '0 auto', padding: '60px 56px 80px' }}>
+        <BvMetaBar />
+        <h1 className="bv-title">{BV_TITLE}</h1>
+        <p className="bv-deck">{BV_DECK}</p>
+
+        <div className="bv-prose" style={{ marginTop: 48 }}>
+          <p className="lead">{BV_TLDR_PARAS[0]}</p>
+          <p>{BV_TLDR_PARAS[1]}</p>
+        </div>
+
+        <BvHeroPhoto style={{ height: 360, margin: '40px 0' }} />
+
+        <div className="bv-prose">
+          <p>{BV_TLDR_PARAS[2]}</p>
+        </div>
+
+        <div style={{ margin: '36px 0 12px' }}>
+          <span className="small-cap" style={{ display: 'block', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--sub)', marginBottom: 12 }}>
+            ↓ Forecast viewer
+          </span>
+        </div>
+        <BvEmbed />
+
+        <hr className="bv-divider" />
+        <BvCiteContact />
+      </main>
+    </div>);
+
+}
+
+/* ============================================================
+   V3 — Field-notebook
+   ============================================================ */
+function BeaverV3() {
+  return (
+    <div className="bv" style={{ minHeight: 2000 }}>
+      <BvHeader />
+      <main style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 56px 80px' }}>
+        <BvMetaBar />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: 40, alignItems: 'start', marginTop: 12 }}>
+          <div>
+            <h1 className="bv-title">{BV_TITLE}</h1>
+            <p className="bv-deck">{BV_DECK}</p>
+          </div>
+          <BvHeroPhoto style={{ height: 200, marginTop: 24 }} caption="Shingle Pt." />
+        </div>
+
+        <hr className="bv-divider" />
+
+        {/* Section 1 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: 40, alignItems: 'start' }}>
+          <div className="bv-prose">
+            <h2 className="bv-section-h">Where, how fast, into which streams.</h2>
+            <p className="lead">{BV_TLDR_PARAS[0]}</p>
+            <p>{BV_TLDR_PARAS[1]}</p>
+          </div>
+          <div className="bv-margin">
+            "Across the western Arctic" — confirmed in YT, NWT, and adjacent AK; signal weaker in the Mackenzie Delta proper.
+          </div>
+        </div>
+
+        <hr className="bv-divider" />
+
+        {/* Section 2 — embed */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: 40, alignItems: 'start' }}>
+          <div>
+            <h2 className="bv-section-h">A thinking tool.</h2>
+            <div className="bv-prose">
+              <p>{BV_TLDR_PARAS[2]}</p>
+            </div>
+            <BvEmbed />
+          </div>
+          <div className="bv-margin">
+            The model is per-dam, not per-colony. It under-counts dispersal across drainage divides — which I think is exactly what's happening at Shingle Pt.
+          </div>
+        </div>
+
+        <hr className="bv-divider" />
+        <BvCiteContact />
+      </main>
+    </div>);
+
+}
+
+Object.assign(window, { BeaverV1, BeaverV2, BeaverV3, BvHeader });
