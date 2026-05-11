@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beaver Expansion — Calibrated Spread Forecast</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'JetBrains Mono',monospace;background:#efe7d6;color:#4a3a2a}
+  #map{width:100%;height:100vh}
+  .leaflet-container{background:#efe7d6!important}
+  .panel{position:fixed;top:16px;right:16px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:16px;width:280px;max-height:calc(100vh - 32px);overflow-y:auto;box-shadow:0 8px 24px rgba(86,62,34,.12)}
+  .panel h1{font-size:13px;color:#9f5b2d;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+  .notes{margin-top:8px;font-size:9px;color:#6c5843;line-height:1.55}
+  .notes b{color:#7e5b37}
+  .title-bar{position:fixed;top:16px;left:60px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:10px 16px;box-shadow:0 8px 24px rgba(86,62,34,.12)}
+  .title-bar h1{font-size:15px;color:#9f5b2d;letter-spacing:2px;text-transform:uppercase;margin:0}
+  .title-bar .sub{font-size:10px;color:#7f6a50}
+  .timeline{position:fixed;bottom:24px;left:60px;right:310px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:10px 16px;box-shadow:0 8px 24px rgba(86,62,34,.12)}
+  .tl-top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .play-btn{background:#b77735;border:none;color:#fff;padding:7px 16px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;min-width:90px}
+  .play-btn:hover{background:#9f5b2d}
+  .tl-h{display:flex;justify-content:space-between;align-items:center;flex:1;font-size:10px;color:#7f6a50}
+  .tl-h .cur{color:#9f5b2d;font-weight:700}
+  .timeline input[type=range]{width:100%;accent-color:#b77735}
+  .legend{position:fixed;top:88px;left:60px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:8px 12px;display:flex;gap:14px;font-size:10px;box-shadow:0 8px 24px rgba(86,62,34,.12);flex-wrap:wrap;max-width:560px}
+  .ldot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  .ldot.hollow{background:transparent;border:2px solid #8a7b63}
+  .ring{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;background:transparent;border:2px solid #ffffff;box-shadow:0 0 0 1px #b69067 inset}
+  .stats-row{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+  .st{text-align:center;min-width:50px}.st-v{font-size:16px;font-weight:700;color:#7e5b37}.st-l{font-size:7px;color:#7f6a50;letter-spacing:1px}
+  .ui-toggle{position:fixed;top:16px;right:16px;z-index:1200;background:#b77735;border:none;color:#fff;padding:9px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;box-shadow:0 8px 24px rgba(86,62,34,.18)}
+  .ui-toggle:hover{background:#9f5b2d}
+  body.ui-hidden .ui-chrome{display:none!important}
+  .load-overlay{position:fixed;inset:0;z-index:2000;background:#efe7d6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+  .load-overlay h2{color:#9f5b2d;font-size:16px}
+  .load-overlay p{color:#7f6a50;font-size:11px;max-width:400px;text-align:center;line-height:1.6}
+  .load-overlay input[type=file]{margin:12px 0}
+  .load-overlay button{background:#b77735;border:none;color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600}
+  @media(max-width:700px){
+    .title-bar{left:16px;right:72px}.legend{left:16px;right:16px;top:84px;max-width:none}
+    .timeline{left:16px;right:16px;bottom:16px}.panel{left:16px;right:16px;top:auto;bottom:84px;width:auto;max-height:40vh}
+  }
+</style>
+</head>
+<body>
+
+<!-- File loader overlay -->
+<div class="load-overlay" id="loadOverlay">
+  <h2>Beaver Expansion Forecast Viewer</h2>
+  <p>Load the <code>forecast_leaflet.json</code> output from the R simulation script.
+     This contains yearly dam states (observed + simulated) with birth years, failure years, and coordinates.</p>
+  <input type="file" id="jsonFile" accept=".json">
+  <button onclick="loadDemo()">Or load demo (observed data only)</button>
+</div>
+
+<div id="map"></div>
+<button class="ui-toggle" id="uiToggle" style="display:none">Hide UI</button>
+
+<div class="ui-chrome title-bar" style="display:none" id="titleBar">
+  <h1>Beaver Expansion Forecast</h1>
+  <div class="sub">Pattern-oriented simulation · RF mask (> 0.5) · calibrated via ABC</div>
+</div>
+
+<div class="ui-chrome panel" style="display:none" id="sidePanel">
+  <h1>Year Summary</h1>
+  <div class="stats-row">
+    <div class="st"><div class="st-v" id="actC">0</div><div class="st-l">ACTIVE</div></div>
+    <div class="st"><div class="st-v" id="failC">0</div><div class="st-l">FAILED</div></div>
+    <div class="st"><div class="st-v" id="newC">0</div><div class="st-l">NEW</div></div>
+    <div class="st"><div class="st-v" id="simC">0</div><div class="st-l">SIMULATED</div></div>
+    <div class="st"><div class="st-v" id="totC">0</div><div class="st-l">TOTAL</div></div>
+  </div>
+  <div class="notes">
+    <div><b>RF mask:</b> suitability > 0.50</div>
+    <div><b>Source:</b> R pattern-oriented simulation</div>
+    <div style="margin-top:6px"><b>How it works:</b></div>
+    <div>Each active dam independently attempts to establish one offspring per year (Pspread). Settlement weighted by RF suitability and distance decay. Rare long-distance events via Pleap. Dam lifespans drawn from observed failure hazard.</div>
+    <div style="margin-top:4px">Parameters calibrated via LHS + ABC against observed 2010–2025 pattern.</div>
+  </div>
+</div>
+
+<div class="ui-chrome legend" style="display:none" id="legendBar">
+  <span><span class="ldot" style="background:#8c5a3c"></span>Observed active</span>
+  <span><span class="ldot" style="background:#a99b8c"></span>Failed</span>
+  <span><span class="ldot" style="background:#d79b49"></span>Simulated active</span>
+  <span><span class="ldot" style="background:#c6b19a"></span>Simulated failed</span>
+  <span><span class="ring"></span>New this year</span>
+</div>
+
+<div class="ui-chrome timeline" style="display:none" id="timelineBar">
+  <div class="tl-top">
+    <button class="play-btn" id="playBtn">▶ Play</button>
+    <div class="tl-h"><span id="minYr">2010</span><span class="cur" id="curYr">2010</span><span id="maxYr">2050</span></div>
+  </div>
+  <input type="range" id="yearSlider" min="2010" max="2050" value="2010">
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// State
+let allData = [];
+let years = [];
+let currentYear = 2010;
+let playing = false;
+let playTimer = null;
+
+const map = L.map("map", {zoomControl: false}).setView([68.78, -137.0], 9);
+L.control.zoom({position: "bottomright"}).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png", {
+  attribution: '&copy; CARTO', subdomains: "abcd", maxZoom: 19
+}).addTo(map);
+
+const pointLayer = L.layerGroup().addTo(map);
+
+function showUI() {
+  ["titleBar","sidePanel","legendBar","timelineBar","uiToggle"].forEach(id => {
+    document.getElementById(id).style.display = "";
+  });
+}
+
+function initFromData(data) {
+  allData = data;
+  // Discover years
+  const yearSet = new Set(data.map(d => d.year));
+  years = [...yearSet].sort((a,b) => a - b);
+  if (years.length === 0) { alert("No year data found in JSON"); return; }
+
+  currentYear = years[0];
+  const slider = document.getElementById("yearSlider");
+  slider.min = years[0]; slider.max = years[years.length-1]; slider.value = currentYear;
+  document.getElementById("minYr").textContent = years[0];
+  document.getElementById("maxYr").textContent = years[years.length-1];
+
+  document.getElementById("loadOverlay").style.display = "none";
+  showUI();
+  render();
+}
+
+// Load JSON file
+document.getElementById("jsonFile").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      initFromData(data);
+    } catch(err) { alert("Failed to parse JSON: " + err.message); }
+  };
+  reader.readAsText(file);
+});
+
+// Demo mode: observed data only
+function loadDemo() {
+  const OBS = `1,68.95320261,-138.5381922,13,2017,2018,1,,1
+2,68.84156078,-137.0813159,33,2021,2023,2,,2
+3,68.83874627,-137.0602665,56,2020,2023,3,,1
+4,68.82978029,-137.0499073,36,2010,2014,4,,1
+5,68.82898152,-137.0568341,40,2020,2023,3,,2
+6,68.79230038,-136.9459155,25,2018,2025,7,,0
+7,68.78759904,-136.9273292,20,2018,2025,7,,1
+8,68.78738208,-136.9264182,41,2010,2025,15,1,0
+9,68.787412,-136.9233519,32,2020,2025,5,1,1
+10,68.78802066,-136.9217223,63,2020,2023,3,,1
+11,68.78712349,-136.9134027,20,2020,2025,5,1,1
+12,68.78699262,-136.9127576,21,2020,2021,1,1,1
+13,68.78694295,-136.9124941,33,2010,2025,15,1,0
+14,68.78682568,-136.9119941,22,2020,2025,5,1,0
+15,68.78545472,-136.911131,19,2020,2025,5,1,0
+16,68.78576288,-136.9114382,9,2020,2023,3,1,1
+17,68.78394779,-136.9025082,23,2010,2025,15,1,0
+18,68.78379782,-136.9020446,28,2020,2025,5,1,1
+19,68.7664095,-136.8997957,29,2010,2025,15,,0
+21,68.76514109,-136.8928174,94,2010,2025,15,1,0
+22,68.76424847,-136.8897962,86,2010,2025,15,1,0
+23,68.7634475,-136.887795,53,2010,2010,0,1,1
+25,68.75854669,-136.8796491,26,2020,2025,5,1,0
+26,68.85172617,-137.1085754,38,2014,2023,9,1,0
+27,68.94437643,-137.4908005,26,2018,2018,0,,1
+28,68.9440658,-137.4969573,12,2018,2021,3,,1
+29,68.93786862,-137.5199843,9,2018,2018,0,,1
+30,68.94611831,-137.5153377,116,2014,2018,4,,1
+31,68.96374547,-137.564692,9,2011,2021,10,1,2
+32,68.95382715,-137.3131687,34,2014,2025,11,,0
+33,68.74266187,-136.8870392,142,2014,2025,11,1,0
+34,68.74340219,-136.8870454,34,2016,2025,9,1,0
+35,68.73959586,-136.8871388,19,2013,2025,12,1,0
+36,68.73933594,-136.8856765,92,2011,2025,14,1,0
+37,68.73342168,-136.8719582,16,2020,2023,3,,1
+38,68.73549084,-136.8555903,13,2012,2018,6,,1
+39,68.73156128,-136.8532783,13,2020,2021,1,,1
+40,68.72962473,-136.8524396,12,2020,2023,3,,1
+41,68.69453441,-136.8536242,50,2020,2025,5,,0
+43,68.66475377,-136.8219543,51,2013,2025,12,,0
+44,68.63524174,-136.3304141,43,2017,2017,0,1,1
+45,68.63456914,-136.329217,30,2010,2017,7,1,1
+46,68.63473307,-136.3294593,24,2021,2025,4,1,0
+47,68.636967,-136.3332313,18,2021,2025,4,,0
+48,68.6375797,-136.3345912,14,2021,2025,4,,0
+49,68.63811438,-136.3247889,19,2010,2023,13,1,1
+50,68.69061902,-136.2556227,56,2015,2021,6,1,1
+51,68.69158447,-136.2521936,32,2015,2025,10,1,0
+52,68.69158232,-136.2509494,21,2015,2017,2,1,1
+53,68.68415316,-136.2431981,50,2015,2018,3,,1
+54,68.60030581,-135.9857099,84,2018,2025,7,,0
+55,68.59933751,-135.9859671,40,2020,2025,5,1,0
+56,68.59973926,-135.9717741,35,2022,2022,0,,1
+57,68.6704416,-136.1304563,13,2015,2018,3,1,1
+58,68.66596494,-136.1358866,19,2015,2020,5,,1
+59,68.66484326,-136.1351001,29,2015,2025,10,,0
+60,68.65999545,-136.1267816,19,2015,2025,10,,0
+61,68.54251648,-135.7109399,59,2017,2025,8,,0
+62,68.72732787,-136.8295166,13,2013,2013,0,,1
+63,68.59130398,-136.5047035,41,2018,2025,7,,0
+64,68.59199668,-136.5042044,64,2018,2021,3,,1
+66,68.59814107,-136.5318335,113,2018,2025,7,,0
+67,68.60645883,-136.6792367,27,2010,2025,15,1,1
+68,68.59300387,-136.5823363,17,2010,2023,13,1,1
+69,68.59287343,-136.5833031,11,2010,2021,11,1,1
+70,68.59268763,-136.5845135,13,2010,2021,11,1,1
+71,68.5925441,-136.5857602,9,2018,2021,3,1,1
+73,68.89540651,-138.1119402,8,2017,2023,6,1,1
+74,68.89534812,-138.1124677,4,2023,2023,0,,1
+75,68.89527983,-138.1194896,22,2023,2025,2,,1
+76,68.89488022,-138.1218282,19,2023,2025,2,,0
+77,68.89555025,-138.1300649,14,2023,2023,0,1,1
+78,68.89526896,-138.1290546,20,2017,2023,6,1,1
+79,68.94844442,-138.5649891,44,2012,2018,6,,1
+80,68.9013986,-137.2756983,33,2021,2023,2,,1
+81,68.90351121,-137.2733207,12,2018,2023,5,,1
+82,68.50056092,-135.5982372,13,2017,2025,8,,0
+83,68.552193,-135.6005899,24,2017,2025,8,1,0
+84,68.55230865,-135.5998421,10,2022,2025,3,1,0
+85,68.5623319,-135.6029625,23,2015,2025,10,,0
+86,68.61685373,-135.9891448,13,2022,2025,3,1,0
+87,68.61801117,-135.9951145,31,2022,2025,3,1,0
+88,68.61826186,-135.9955983,35,2022,2022,0,1,1
+89,68.62954103,-136.0710403,42,2015,2020,5,,1
+90,68.95966409,-137.8403181,72,2018,2023,5,1,1
+91,68.95995257,-137.8403544,63,2023,2025,2,1,0
+92,68.98002729,-137.8304318,30,2023,2025,2,1,0
+93,68.98026126,-137.8283773,4,2023,2025,2,1,0
+94,68.96945011,-138.4179861,23,2015,2020,5,1,1
+95,68.96935629,-138.4168142,17,2015,2025,10,1,0
+96,68.97801505,-138.4506677,23,2018,2023,5,,1
+97,68.97795532,-138.4498924,13,2018,2020,2,1,1
+98,68.68812606,-136.3092636,33,2017,2017,0,,1
+99,68.57398591,-136.4978394,26,2014,2018,4,,1
+100,68.56797091,-136.7227811,40,2018,2023,5,1,1
+101,68.56744014,-136.7220148,20,2010,2021,11,1,1
+102,68.56419117,-136.7417435,19,2021,2023,2,,1
+103,68.95980437,-137.6203637,30,2018,2021,3,,2
+104,68.94203744,-137.6089391,12,2018,2021,3,,2
+105,68.95285168,-137.7172785,7,2018,2018,0,1,1
+106,68.9536008,-137.7179123,13,2018,2018,0,1,1
+107,68.95492928,-137.7188616,26,2018,2018,0,1,1
+109,69.0801582,-138.2926673,120,2016,2025,9,,0
+110,68.61417792,-136.788787,13,2020,2020,0,,1
+111,68.66465553,-136.7962333,24,2020,2022,2,,1
+112,68.66136586,-136.8091055,35,2020,2025,5,,0
+113,68.83344534,-137.0519202,14,2010,2023,13,,2
+115,68.68211167,-136.5205368,28,2021,2021,0,,1
+116,68.68098171,-136.5154897,22,2021,2021,0,,1
+117,68.72891232,-136.4436537,90,2010,2025,15,,0
+118,68.79805927,-136.768467,56,2018,2025,7,,0
+120,68.74118693,-136.7648041,8,2020,2025,5,1,0
+121,68.7412759,-136.7654656,10,2020,2025,5,1,0
+122,68.74125968,-136.7660566,10,2020,2025,5,1,0
+123,68.74121617,-136.7664111,7,2020,2025,5,1,1
+124,68.74112832,-136.7677496,11,2020,2025,5,1,1
+119,68.74113785,-136.7642687,14,2020,2025,5,1,1
+125,68.73929126,-136.7556323,14,2020,2025,5,,0
+126,68.72355079,-136.7454006,12,2021,2025,4,,0
+127,68.78548193,-136.8570499,17,2020,2025,5,,0
+128,68.83246927,-136.9504013,35,2011,2020,9,,1
+129,68.80412883,-136.8711778,25,2020,2025,5,,0
+130,69.01062031,-138.0290626,27,2019,2023,4,,1
+132,68.94350406,-137.7224795,14,2011,2018,7,,1`;
+
+  // Build demo data in the same format as forecast_leaflet.json
+  const dams = OBS.split("\n").map(l => {
+    const p = l.split(",");
+    const last = (p[5]==="NA"||p[5]==="") ? 9999 : +p[5];
+    const failed = +p[8];
+    const failYr = (failed===1 && last < 9999) ? last + 1 : Infinity;
+    return {uid:"obs_"+p[0], x:+p[2], y:+p[1], birth_year:+p[4], failure_year:failYr, simulated:false};
+  });
+
+  const minYr = Math.min(...dams.map(d=>d.birth_year));
+  const maxYr = 2025;
+  const data = [];
+  for (let yr = minYr; yr <= maxYr; yr++) {
+    dams.forEach(d => {
+      let state = null;
+      if (d.birth_year === yr) state = "new";
+      else if (d.birth_year < yr && d.failure_year > yr) state = "active";
+      else if (isFinite(d.failure_year) && d.failure_year <= yr) state = "failed";
+      if (state) {
+        data.push({uid:d.uid, x:d.x, y:d.y, birth_year:d.birth_year,
+                   failure_year:d.failure_year, simulated:d.simulated, year:yr, state:state});
+      }
+    });
+  }
+  initFromData(data);
+}
+
+function render() {
+  pointLayer.clearLayers();
+  const yr = currentYear;
+  const snapshot = allData.filter(d => d.year === yr);
+
+  let nActive=0, nFailed=0, nNew=0, nSim=0;
+
+  snapshot.forEach(d => {
+    const isSim = d.simulated;
+    const isNew = d.state === "new";
+    const isActive = d.state === "active" || d.state === "new";
+    const isFailed = d.state === "failed";
+
+    if (isActive) nActive++;
+    if (isFailed) nFailed++;
+    if (isNew) nNew++;
+    if (isSim) nSim++;
+
+    let color, fillOpacity;
+    if (isFailed) {
+      color = isSim ? "#c6b19a" : "#a99b8c";
+      fillOpacity = 0.5;
+    } else {
+      color = isSim ? "#d79b49" : "#8c5a3c";
+      fillOpacity = 0.85;
+    }
+
+    const marker = L.circleMarker([d.y, d.x], {
+      radius: 5,
+      fillColor: color,
+      fillOpacity: fillOpacity,
+      color: isNew ? "#ffffff" : color,
+      weight: isNew ? 2.5 : 1,
+      opacity: isNew ? 1 : 0.6
+    });
+
+    const failStr = isFinite(d.failure_year) ? d.failure_year : "—";
+    marker.bindPopup(
+      `<div style="font-family:monospace;font-size:11px;line-height:1.6">
+        <strong style="color:#9f5b2d">${d.uid}</strong><br>
+        ${isSim ? "Simulated" : "Observed"} · ${d.state}<br>
+        Born: ${d.birth_year} · Fails: ${failStr}
+      </div>`
+    );
+    pointLayer.addLayer(marker);
+  });
+
+  document.getElementById("actC").textContent = nActive;
+  document.getElementById("failC").textContent = nFailed;
+  document.getElementById("newC").textContent = nNew;
+  document.getElementById("simC").textContent = nSim;
+  document.getElementById("totC").textContent = snapshot.length;
+  document.getElementById("curYr").textContent = yr;
+}
+
+// Timeline controls
+function stopPlay() {
+  playing = false;
+  if (playTimer) { clearInterval(playTimer); playTimer = null; }
+  document.getElementById("playBtn").textContent = "▶ Play";
+}
+
+document.getElementById("yearSlider").oninput = function() {
+  stopPlay();
+  currentYear = +this.value;
+  render();
+};
+
+document.getElementById("playBtn").onclick = function() {
+  if (playing) { stopPlay(); return; }
+  const slider = document.getElementById("yearSlider");
+  const maxYr = +slider.max;
+  if (currentYear >= maxYr) { currentYear = +slider.min; slider.value = currentYear; render(); }
+  playing = true;
+  this.textContent = "❚❚ Pause";
+  playTimer = setInterval(() => {
+    if (currentYear >= +slider.max) { stopPlay(); return; }
+    currentYear++;
+    slider.value = currentYear;
+    render();
+  }, 700);
+};
+
+// UI toggle
+const uiToggle = document.getElementById("uiToggle");
+uiToggle.onclick = function() {
+  document.body.classList.toggle("ui-hidden");
+  this.textContent = document.body.classList.contains("ui-hidden") ? "Show UI" : "Hide UI";
+};
+if (window.matchMedia && window.matchMedia("(max-width:700px)").matches) {
+  document.body.classList.add("ui-hidden");
+}
+</script>
+</body>
+</html>

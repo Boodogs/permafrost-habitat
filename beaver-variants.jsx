@@ -1,5 +1,5 @@
 // Beaver Expansion — three layout variants of the same content.
-// Embeds uploads/beaver-forecast-viewer.html via iframe.
+// Embeds widgets/beaver-forecast-viewer.html via iframe.
 
 const BV_TITLE = <>Beaver Expansion onto the <em>North Slope</em></>;
 const BV_DECK = "Tracking beaver occupancy of Arctic streams along the Yukon coast — combining satellite-detected dam ponds with field verification at Shingle Point and adjacent drainages.";
@@ -60,7 +60,7 @@ function BvEmbed({ caption = true }) {
     <div className="bv-embed-wrap">
       <iframe
         className="bv-embed-frame"
-        src="uploads/beaver-forecast-viewer.html"
+        src="widgets/beaver-forecast-viewer.html"
         title="Beaver Expansion Forecast Viewer"
         loading="lazy" />
       
