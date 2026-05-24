@@ -185,26 +185,23 @@
   /* Hide leaflet attribution prefix to keep it clean (still shows OSM/CARTO credits) */
   .leaflet-control-attribution { font-family: "JetBrains Mono", monospace; font-size: 9px; }
 
-  /* Map-hint — visible on desktop AND mobile to advertise pin interactivity.
-     On desktop it sits just below the layers legend so it doesn't crash
-     into the nameplate at narrow widths. */
-  .map-hint {
-    position: absolute;
-    top: 158px;
-    right: 18px;
-    z-index: 600;
-    display: flex; gap: 8px; align-items: center;
-    background: var(--paper);
-    border: 1.5px solid var(--ink);
-    padding: 7px 12px;
+  /* Map-hint — sits below the basemap selector inside the .layers card,
+     so it always anchors to the bottom of that panel without overlap risks. */
+  .layers .map-hint {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #ccc;
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
+    font-size: 9.5px;
     letter-spacing: 0.04em;
     color: var(--ink);
-    pointer-events: none;
-    max-width: 240px;
+    line-height: 1.3;
+    max-width: 180px;
   }
-  .map-hint .hint-arrow {
+  .layers .map-hint .hint-arrow {
     color: var(--accent);
     font-weight: 700;
     animation: hint-bounce 2.4s ease-in-out infinite;
@@ -219,7 +216,7 @@
     .stage { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; min-height: 100vh; }
     /* Make the map area a flex column so the nameplate can sit above the map */
     .stage > div:first-child { display: flex; flex-direction: column; }
-    #map { height: 55vh; min-height: 320px; order: 4; }
+    #map { height: 55vh; min-height: 320px; order: 3; }
     .nameplate {
       position: static; order: 1;
       max-width: none; padding: 12px 16px;
@@ -244,25 +241,14 @@
     .layers .row { padding: 0; }
     .layers .swatch { width: 11px; height: 11px; }
     .layers .basemap { margin: 0; padding: 0 0 0 12px; border-top: none; border-left: 1px dashed #ccc; }
-    .map-hint {
-      order: 3;
-      display: flex; gap: 8px; align-items: center; justify-content: center;
-      padding: 8px 14px;
-      background: var(--paper);
-      border-bottom: 1.5px solid var(--ink);
-      font-family: "JetBrains Mono", monospace;
+    .layers .map-hint {
+      flex-basis: 100%;
+      max-width: none;
+      margin: 4px 0 0;
+      padding: 6px 0 0;
+      border-top: 1px dashed #ccc;
+      justify-content: center;
       font-size: 10px;
-      color: var(--ink);
-      letter-spacing: 0.04em;
-    }
-    .map-hint .hint-arrow {
-      color: var(--accent);
-      font-weight: 700;
-      animation: hint-bounce 2.4s ease-in-out infinite;
-    }
-    @keyframes hint-bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(3px); }
     }
     .panel { border-left: none; border-top: 1.5px solid var(--ink); padding: 18px 16px 28px; min-height: 40vh; }
     .panel .title { font-size: 28px; }
@@ -307,10 +293,10 @@
           <option value="positron">Carto · Positron</option>
         </select>
       </div>
-    </div>
-    <div class="map-hint" aria-hidden="true">
-      <span class="hint-arrow">↓</span>
-      <span class="hint-text">Click any pin to read about that project</span>
+      <div class="map-hint" aria-hidden="true">
+        <span class="hint-arrow">↓</span>
+        <span class="hint-text">Click any pin to read about that project</span>
+      </div>
     </div>
   </div>
 

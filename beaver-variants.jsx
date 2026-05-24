@@ -65,9 +65,9 @@ function BvCompanionLink() {
     <a href="beaver-habitat-app.html" className="bv-companion-link">
       <div className="bv-companion-body">
         <div className="bv-companion-kicker mono">Interactive companion tool · separate page</div>
-        <div className="bv-companion-title">Beaver habitat &amp; dam persistence forecast</div>
+        <div className="bv-companion-title">Beaver habitat & dam persistence</div>
         <div className="bv-companion-desc">
-          Click anywhere in the study area to ask: <i>Is this good beaver habitat? Will a dam built here still be standing in five years?</i>
+          Explore the models in my Earth Engine app <i></i>
         </div>
       </div>
       <div className="bv-companion-cta mono">Open the app <span className="arrow">→</span></div>
@@ -137,6 +137,11 @@ function BeaverV1() {
         <BvCompanionLink />
 
         <div style={{ marginTop: 36 }}>
+          <div className="bv-prose" style={{ marginBottom: 16 }}>
+            <span className="small-cap">Forecast viewer</span>
+            <h2 className="bv-section-h" style={{ marginTop: 6 }}>Beaver expansion to 2050.</h2>
+            <p style={{ color: 'var(--sub)', margin: '6px 0 0', maxWidth: '68ch' }}>An interactive forecast of where simulated dams are likely to appear and persist across the Yukon North Slope. Press play or drag the year slider to step through time.</p>
+          </div>
           <BvEmbed />
         </div>
 
