@@ -64,6 +64,7 @@ function PopulationContrast() {
 
   return (
     <div className="bv-embed-wrap">
+      <div className="bv-chart-scroll">
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: W, display: 'block', fontFamily: "'JetBrains Mono', monospace" }}>
         {yTicks.map((v) => {
           const y = ys(v);
@@ -96,6 +97,7 @@ function PopulationContrast() {
         <text x={PAD.left + pw / 2} y={H - 6} textAnchor="middle" fill="#555" fontSize="9">Year</text>
         <text x={14} y={PAD.top + ph / 2} textAnchor="middle" fill="#555" fontSize="9" transform={`rotate(-90, 14, ${PAD.top + ph / 2})`}>Estimated population</text>
       </svg>
+      </div>
       <div className="bv-embed-cap">
         <span className="label">Fig. 1</span>
         <span>The Richardson Mountains population has grown from ~266 to ~965 animals in the last 35 years; the neighbouring North Slope population has held roughly steady. The contrast is the puzzle this chapter starts from.</span>
@@ -166,7 +168,7 @@ function MoosePage() {
         <hr className="bv-divider" />
 
         <div>
-          <span className="small-cap">What I'm trying to figure out</span>
+          <span className="small-cap">Three questions</span>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginTop: 16 }}>
             {MS_OBJECTIVES.map((obj) =>
             <div key={obj.n} style={{

@@ -8,7 +8,7 @@ const SB_PARAS = [
 "This chapter asks: what happens to the birds when their habitat is affected by tundra landscape change? We deployed bird recorders at disturbance sites — slumps, drained-lake basins, recent burns — paired with undisturbed controls. From the recordings, we estimate how species' relative abundances shift, whether community composition changes, and — combined with the mapped footprint of disturbance across the region — what those shifts add up to at landscape scale.",
 "The pattern emerging is consistent with what the vegetation predicts. Open-tundra specialists — Lapland Longspur, Snow Bunting, American Pipit — are detected less often at disturbed sites; shrub-associated species — White-crowned Sparrow, Common Redpoll, American Tree Sparrow — more often."];
 
-const SB_PARTNERS = "WMAC-NWT · Environment and Climate Change Canada (Canadian Wildlife Service)";
+const SB_PARTNERS = "ECCC \u2013 Canadian Wildlife Service · Wildlife Management Advisory Council \u2013 NWT";
 
 function SbMetaBar() {
   return (
@@ -205,26 +205,26 @@ function SbShiftsChart() {
 
   return (
     <figure className="bv-embed-wrap" style={{ margin: '0 auto', maxWidth: 720 }}>
-      <div style={{
+      <div className="sb-shifts-chart" style={{
         border: '1.5px solid var(--ink)',
         background: 'var(--paper)',
         padding: '20px 22px 6px'
       }}>
-        <div style={{
+        <div className="sb-shifts-head" style={{
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
           gap: 18, marginBottom: 14, flexWrap: 'wrap'
         }}>
           <div>
-            <div className="mono" style={{
+            <div className="mono sb-shifts-kicker" style={{
               fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
               color: 'var(--accent)', fontWeight: 600
             }}>Top 10 increases · Top 10 decreases</div>
-            <div style={{
+            <div className="sb-shifts-title" style={{
               fontFamily: "'Source Serif 4', serif", fontSize: 17,
               fontWeight: 500, marginTop: 4
             }}>Species shifts under disturbance</div>
           </div>
-          <div style={{ display: 'flex', gap: 18, fontSize: 12, color: 'var(--sub)' }}>
+          <div className="sb-shifts-legend" style={{ display: 'flex', gap: 18, fontSize: 12, color: 'var(--sub)' }}>
             <span><span style={{
                 display: 'inline-block', width: 12, height: 12, background: POS,
                 verticalAlign: 'middle', marginRight: 6
@@ -236,6 +236,7 @@ function SbShiftsChart() {
           </div>
         </div>
 
+        <div className="bv-chart-scroll">
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}
         role="img" aria-label="Bar chart of species detection-rate shifts under permafrost disturbance">
           {/* Vertical gridlines on tick stops */}
@@ -289,6 +290,7 @@ function SbShiftsChart() {
 
           })}
         </svg>
+        </div>
       </div>
       <figcaption className="bv-embed-cap">
         <span className="label"></span>

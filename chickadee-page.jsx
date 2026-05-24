@@ -3,7 +3,7 @@
 // Uses BvHeader from beaver-variants.jsx.
 
 const GH_TITLE = <>Grey-headed <em>Chickadee</em></>;
-const GH_DECK = "The Grey-headed Chickadee (Poecile cinctus) is a Boreal-Arctic resident that occurs in Canada only in the Yukon and Northwest Territories. Historical records date back to 1864, but there have been few recent observations and only one sighting in Canada in the last fifteen years. In 2019, we returned to every location with a historical record in the Yukon to conduct a targeted acoustic search. However, we found none. Here's what that absence can teach us.";
+const GH_DECK = <>The Grey-headed Chickadee (<i>Poecile cinctus</i>) is a Boreal-Arctic resident that occurs in Canada only in the Yukon and Northwest Territories. Historical records date back to 1864, but there have been few recent observations and only one sighting in Canada in the last fifteen years. In 2019, we returned to every location with a historical record in the Yukon to conduct a targeted acoustic search. However, we found none. Here's what that absence can teach us.</>;
 
 const GH_PARAS = [
 "We revisited every historical observation and collection locality for Grey-headed Chickadee in the Yukon — seventeen sites spanning the Ogilvie Mountains, the Richardson Mountains, and the Old Crow Flats. At each, we deployed autonomous recording units and processed the audio with a species-specific call recognizer, subsampled human listening, and BirdNET. Sixty-two additional sites were selected randomly with spatial balance and habitat weighting within the species' historical range.",
@@ -57,6 +57,7 @@ function PosteriorChart() {
 
   return (
     <div className="bv-embed-wrap">
+      <div className="bv-chart-scroll">
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: W, display: 'block', fontFamily: "'JetBrains Mono', monospace" }}>
         {/* Grid lines */}
         {xTicks.map((v) => {
@@ -94,6 +95,7 @@ function PosteriorChart() {
         {/* Y axis label */}
         <text x={12} y={PAD.top + ph / 2} textAnchor="middle" fill="#555" fontSize="9" transform={`rotate(-90, 12, ${PAD.top + ph / 2})`}>Posterior density</text>
       </svg>
+      </div>
       <div className="bv-embed-cap">
         <span className="label">Fig. 1</span>
         <span>Posterior estimate of Grey-headed Chickadee abundance in Canada. The shaded region shows the 68% probability that ≤ 250 mature individuals remain.</span>
@@ -247,7 +249,7 @@ function ChickadeePage() {
           style={{ height: t.heroH, marginTop: 36 }}
           imgStyle={{ objectPosition: `center ${t.heroY}%` }}
           src="images/grey-headed-chickadee-hero.png"
-          caption={<>Grey-headed Chickadee (<i>Poecile cinctus</i>) · photo by Gerrit Vyn / <a href="https://macaulaylibrary.org/asset/31127091" target="_blank" rel="noopener">Macaulay Library ML31127091</a></>} />
+          caption={<>Grey-headed Chickadee (<i>Poecile cinctus</i>) · <a href="https://macaulaylibrary.org/asset/31127091" target="_blank" rel="noopener">photo by Gerrit Vyn</a></>} />
         
 
         <hr className="bv-divider" />

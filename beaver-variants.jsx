@@ -62,25 +62,15 @@ function BvCiteContact() {
 
 function BvCompanionLink() {
   return (
-    <a href="beaver-habitat-app.html" className="bv-companion-link" style={{
-      display: 'block',
-      marginTop: 28,
-      padding: '16px 20px',
-      border: '1px solid var(--ink)',
-      background: 'var(--paper)',
-      textDecoration: 'none',
-      color: 'var(--ink)'
-    }}>
-      <div className="mono" style={{
-        fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-        color: 'var(--accent)', fontWeight: 600, marginBottom: 6
-      }}>Companion tool →</div>
-      <div style={{
-        fontFamily: "'Source Serif 4', serif", fontSize: 16, lineHeight: 1.4
-      }}>
-        <b style={{ fontWeight: 500 }}>Earth Engine App.</b>{' '}
-        Interact with our models! Click anywhere in the study area and ask two questions: Is this good beaver habitat? Will a dam here still be standing in five years?
+    <a href="beaver-habitat-app.html" className="bv-companion-link">
+      <div className="bv-companion-body">
+        <div className="bv-companion-kicker mono">Interactive companion tool · separate page</div>
+        <div className="bv-companion-title">Beaver habitat &amp; dam persistence forecast</div>
+        <div className="bv-companion-desc">
+          Click anywhere in the study area to ask: <i>Is this good beaver habitat? Will a dam built here still be standing in five years?</i>
+        </div>
       </div>
+      <div className="bv-companion-cta mono">Open the app <span className="arrow">→</span></div>
     </a>);
 
 }
