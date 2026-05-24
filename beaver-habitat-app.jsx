@@ -85,7 +85,7 @@ function BeaverHabitatAppV2({ geeUrl, embedHeight = 620 }) {
       <main style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 56px 80px' }}>
 
         {/* Header row — title + crumb on left, meta chips drift right */}
-        <div style={{ display: 'grid', gridTemplateColumns: MAIN, gap: GAP, alignItems: 'start', marginTop: 12 }}>
+        <div className="bha-grid" style={{ display: 'grid', gridTemplateColumns: MAIN, gap: GAP, alignItems: 'start', marginTop: 12 }}>
           <div>
             <div className="bv-meta">
               <span className="chip" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
@@ -128,7 +128,7 @@ function BeaverHabitatAppV2({ geeUrl, embedHeight = 620 }) {
         </div>
 
         {/* Section 2 — How to read it + margin note */}
-        <div style={{ display: 'grid', gridTemplateColumns: MAIN, gap: GAP, alignItems: 'start', marginTop: 36 }}>
+        <div className="bha-grid" style={{ display: 'grid', gridTemplateColumns: MAIN, gap: GAP, alignItems: 'start', marginTop: 36 }}>
           <div className="bv-prose">
             <span className="small-cap">HOW TO READ IT</span>
             <p style={{ marginTop: 10 }}>{BHA_PARAS.read}</p>
