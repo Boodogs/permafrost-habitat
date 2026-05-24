@@ -3,7 +3,7 @@
 // Uses BvHeader / BvHeroPhoto from beaver-variants.jsx.
 
 const MS_TITLE = <>Habitat selection of Yukon&rsquo;s <em>Arctic moose</em></>;
-const MS_DECK = "Two neighbouring moose populations — one tripling in size, one stable. Using high-resolution GPS telemetry and the new generation of remote-sensing layers for shrubs and snow, this chapter quantifies how seasonal habitat selection differs between Richardson Mountains and North Slope moose, and how it tracks the landscape's accelerating change.";
+const MS_DECK = "Examining habitat selection of moose in northwestern Canada using satellite telemetry and remote-sensing for vegetation and snow.";
 
 const MS_CONTEXT_PARAS = [
 "The Western Canadian Arctic is warming at roughly 0.73 °C per decade. Shrubification, accelerating permafrost thaw, shifts in precipitation and snow depth, changing fire regimes, and lake drainage and expansion are all reshaping the surface that wildlife depends on. The implications for habitat are everywhere, but rigorous studies that connect specific landscape changes to specific habitat decisions are still rare.",
@@ -12,12 +12,12 @@ const MS_CONTEXT_PARAS = [
 const MS_QUESTION = "How do the biophysical determinants of habitat selection — vegetation, terrain, snow — differ between the Richardson Mountains and North Slope moose populations?";
 
 const MS_OBJECTIVES = [
-{ n: 1, label: "Quantify seasonal habitat selection",
-  body: "Use a Resource Selection and Step Selection framework to estimate selection and avoidance across the seasons that matter — winter, summer, calving, and rut." },
-{ n: 2, label: "Test the role of landscape change",
-  body: "Specifically assess how variables associated with a changing Arctic — shrub abundance, snow characteristics, terrain — drive seasonal selection." },
-{ n: 3, label: "Map important habitats",
-  body: "Produce seasonal habitat-suitability surfaces and migration corridors that can feed directly into land-use planning and conservation strategies." }];
+{ n: 1, label: "What are moose picking and avoiding through the year?",
+  body: "Quantify seasonal habitat selection — winter, summer, calving, rut — using resource and step selection models." },
+{ n: 2, label: "What's driving those choices in a changing Arctic?",
+  body: "Pin down how shrub cover, snow, and terrain shape selection as the landscape shifts under the moose." },
+{ n: 3, label: "Where are the important places, season by season?",
+  body: "Turn the results into seasonal suitability maps and migration corridors that can feed land-use planning and co-management." }];
 
 
 const MS_METHODS = [
@@ -29,7 +29,7 @@ const MS_METHODS = [
   body: "New high-quality spatial layers known to influence moose ecology: shrub cover, Yukon snow models, satellite-derived seasonal metrics. Focus on climate-driven change, forage, and biophysical conditions." }];
 
 
-const MS_PARTNERS = "Yukon Environment · Gwich\u2019in Renewable Resources Board · Vuntut Gwitchin · Aklavik HTC";
+const MS_PARTNERS = "Yukon Environment · Gwich\u2019in Renewable Resources Board · Vuntut Gwitchin";
 
 /* Population contrast — Richardsons (266 → 965 over 35 yrs) vs North Slope (stable).
    Simple animated bar comparison with a hand-drawn feel that matches the rest of the site. */
@@ -105,19 +105,11 @@ function PopulationContrast() {
 
 }
 
-function MooseHeroPlaceholder({ height = 320 }) {
+function MooseHero({ height = 320, objectPosition = 'center 65%' }) {
   return (
     <figure className="bv-hero-photo" style={{ height, marginTop: 36 }}>
-      <div style={{
-        width: '100%', height: '100%',
-        background: 'repeating-linear-gradient(45deg, #ece2cb, #ece2cb 14px, #e6dcc6 14px, #e6dcc6 28px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
-        color: '#7a6e54', letterSpacing: 1.2, textTransform: 'uppercase'
-      }}>
-        photo · cow moose, Richardson Mountains [placeholder]
-      </div>
-      <figcaption className="cap">Cow moose, Richardson Mountains — collar deployment site</figcaption>
+      <img src="images/moose-scope.jpg" alt="Moose seen through a spotting scope" style={{ objectPosition }} />
+      <figcaption className="cap">Moose · scope view, June 2024</figcaption>
     </figure>);
 
 }
@@ -126,12 +118,12 @@ function MsCiteContact() {
   return (
     <div className="bv-foot">
       <div>
-        <h3>Co-management priorities</h3>
-        <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-          Addresses Gwich&rsquo;in Renewable Resources Board research priorities <span className="mono" style={{ fontSize: 12 }}>WI-17-099</span> and <span className="mono" style={{ fontSize: 12 }}>WI-17-100</span> — mapping important habitats and habitat / range use studies for moose.
-        </div>
-        <h3 style={{ marginTop: 18 }}>Partners</h3>
+        <h3>Partners</h3>
         <div style={{ fontSize: 14, color: 'var(--sub)', lineHeight: 1.5 }}>{MS_PARTNERS}</div>
+        <h3 style={{ marginTop: 18 }}>Companion tool</h3>
+        <div style={{ fontSize: 14, lineHeight: 1.5 }}>
+          <a href="moose-habitat-app.html">Moose habitat — Earth Engine app →</a>
+        </div>
       </div>
       <div>
         <h3>Contact</h3>
@@ -139,9 +131,6 @@ function MsCiteContact() {
           <div>Logan McLeod</div>
           <div style={{ color: 'var(--sub)' }}>PhD candidate · Arctic Landscape Ecology Lab</div>
           <div style={{ marginTop: 8 }}><a href="mailto:loganmcleod@uvic.ca">loganmcleod@uvic.ca</a></div>
-          <div className="mono" style={{ fontSize: 12, color: 'var(--sub)', marginTop: 4 }}>
-            <a href="https://orcid.org/0000-0003-4528-1523" target="_blank" rel="noopener">orcid.org/0000-0003-4528-1523</a>
-          </div>
         </div>
       </div>
     </div>);
@@ -149,7 +138,8 @@ function MsCiteContact() {
 }
 
 const MOOSE_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "heroH": 320
+  "heroH": 320,
+  "heroY": 56
 } /*EDITMODE-END*/;
 
 function MoosePage() {
@@ -161,61 +151,22 @@ function MoosePage() {
 
         <div className="bv-meta" style={{ marginTop: 24 }}>
           <span className="chip"><span className="dot"></span>PhD chapter 02</span>
-          <span>RICHARDSON MOUNTAINS · YT/NT</span>
+          <span></span>
           <span>GPS TELEMETRY</span>
           <span>HABITAT SELECTION</span>
+          <span>MOVEMENT MODELS</span>
           <span style={{ color: 'var(--accent, #b77735)' }}></span>
         </div>
 
         <h1 className="bv-title">{MS_TITLE}</h1>
         <p className="bv-deck" style={{ maxWidth: 820 }}>{MS_DECK}</p>
 
-        <MooseHeroPlaceholder height={t.heroH} />
+        <MooseHero height={t.heroH} objectPosition={`center ${t.heroY}%`} />
 
         <hr className="bv-divider" />
 
-        <div className="bv-prose" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
-          <div>
-            <span className="small-cap">A changing surface</span>
-            <p className="lead">{MS_CONTEXT_PARAS[0]}</p>
-          </div>
-          <div>
-            <span className="small-cap">Why moose</span>
-            <p>{MS_CONTEXT_PARAS[1]}</p>
-            <p style={{ color: 'var(--sub)', fontSize: 14, marginTop: 14 }}>
-              Summer habitat — strongly tied to aquatic resources — is critical for building fat reserves, ensuring winter survival, and rearing young. Winter snow accumulation and spring melt likely have strong impacts on movement and use.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 36 }}>
-          <PopulationContrast />
-        </div>
-
-        <hr className="bv-divider" />
-
-        {/* Research question — pull-quote */}
-        <blockquote style={{
-          margin: '0 auto',
-          maxWidth: 820,
-          padding: '24px 0',
-          borderTop: '1px solid var(--ink)',
-          borderBottom: '1px solid var(--ink)',
-          fontFamily: "'Source Serif 4', serif",
-          fontStyle: 'italic',
-          fontSize: 22,
-          lineHeight: 1.4,
-          textAlign: 'center'
-        }}>
-          <span className="small-cap" style={{ display: 'block', marginBottom: 10 }}>Research question</span>
-          {MS_QUESTION}
-        </blockquote>
-
-        <hr className="bv-divider" />
-
-        {/* Objectives — three columns */}
         <div>
-          <span className="small-cap">Objectives</span>
+          <span className="small-cap">What I'm trying to figure out</span>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginTop: 16 }}>
             {MS_OBJECTIVES.map((obj) =>
             <div key={obj.n} style={{
@@ -223,7 +174,7 @@ function MoosePage() {
               paddingTop: 14
             }}>
                 <div className="mono" style={{ fontSize: 11, color: 'var(--sub)', letterSpacing: 1.4 }}>
-                  OBJ · 0{obj.n}
+                  0{obj.n}
                 </div>
                 <h3 style={{
                 fontFamily: "'Source Serif 4', serif",
@@ -240,51 +191,29 @@ function MoosePage() {
 
         <hr className="bv-divider" />
 
-        {/* Methods — three labeled blocks */}
-        <div>
-          <span className="small-cap">Methods · habitat selection modeling</span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginTop: 16 }}>
-            {MS_METHODS.map((m) =>
-            <div key={m.tag} style={{
-              background: 'var(--paper, #fff)',
-              border: '1.25px solid var(--ink)',
-              padding: '16px 18px'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10 }}>
-                  <span className="mono" style={{
-                  fontSize: 11,
-                  background: 'var(--ink)',
-                  color: 'var(--paper, #fff)',
-                  padding: '2px 6px',
-                  letterSpacing: 1
-                }}>{m.tag}</span>
-                  <h3 style={{
-                  fontFamily: "'Source Serif 4', serif",
-                  fontWeight: 500,
-                  fontSize: 16,
-                  margin: 0
-                }}>{m.title}</h3>
-                </div>
-                <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{m.body}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <div style={{
+          margin: '0 auto',
+          maxWidth: 640,
+          padding: '40px 0',
+          textAlign: 'center'
+        }}>          <div className="mono" style={{
+            fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: 'var(--accent, #b77735)', marginBottom: 14
+          }}>Under construction</div>
+          <p style={{
+            fontFamily: "'Source Serif 4', serif",
+            fontSize: 18, lineHeight: 1.55,
+            color: 'var(--ink)', margin: 0
+          }}>This chapter is still in active development. A more complete writeup and results will be coming soon.
 
-        <hr className="bv-divider" />
-
-        <div className="bv-prose" style={{ maxWidth: 720 }}>
-          <span className="small-cap">Why it matters</span>
-          <p>
-            Moose are an important resource. Mapping important habitats and habitat / range-use studies are recognised priorities for co-management partners. An improved understanding of habitat preferences and responses to environmental change is essential for sustainable wildlife management — and for predicting shifts in distribution and abundance as the Arctic continues to change.
           </p>
         </div>
 
-        <hr className="bv-divider" />
         <MsCiteContact />
       </main>
       <TweaksPanel title="Tweaks">
         <TweakSection label="Hero photo">
+          <TweakSlider label="Crop · vertical" value={t.heroY} min={0} max={100} step={1} unit="%" onChange={(v) => setTweak('heroY', v)} />
           <TweakSlider label="Height" value={t.heroH} min={200} max={520} step={10} unit="px" onChange={(v) => setTweak('heroH', v)} />
         </TweakSection>
       </TweaksPanel>

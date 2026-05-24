@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Beaver Habitat &amp; Dam Persistence — Earth Engine Explorer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#1a1a1a; --sub:#555; --faint:#999;
+  --bg:#f7f1e6; --paper:#fff; --hatch:#e6dcc6;
+  --accent:#b77735; --phd:#2f7d4f; --fail:#9a8a76;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif;font-size:14px}
+.app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+
+/* PANEL --------------------------------------------------------- */
+.panel{background:var(--paper);border-right:1px solid var(--ink);
+  padding:22px 24px;overflow-y:auto}
+.kicker{font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  font-weight:600;margin-bottom:4px}
+.title{font-family:"Fraunces",serif;font-weight:500;font-size:28px;
+  line-height:1.05;letter-spacing:-0.01em;margin:0 0 4px}
+.sub{font-size:12px;color:var(--sub);margin-bottom:14px}
+.desc{font-size:13px;line-height:1.5;color:var(--ink);margin:0 0 18px;
+  text-wrap:pretty}
+
+.section{margin-top:18px}
+.section-h{font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  font-weight:600;border-bottom:1px solid var(--hatch);
+  padding-bottom:4px;margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:baseline}
+.section-h .hint{font-weight:400;color:var(--faint);letter-spacing:.06em}
+
+/* Layer rows */
+.lr{display:grid;grid-template-columns:18px 1fr 70px;
+  align-items:center;gap:8px;padding:5px 0;font-size:13px}
+.lr label{cursor:pointer}
+.lr input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;
+  cursor:pointer;margin:0}
+.lr input[type=range]{accent-color:var(--accent);width:70px;margin:0}
+.lr.muted{opacity:.55}
+.lr .swatch{display:inline-block;width:10px;height:10px;border-radius:50%;
+  vertical-align:-1px;margin-right:6px;border:1px solid var(--ink)}
+
+/* Legend */
+.legend-strip{height:14px;width:100%;border:1px solid var(--ink)}
+.legend-strip.suit{background:linear-gradient(90deg,#f7f1e6,#e6dcc6,#c9a47a,#b77735,#7e4a1d,#3d2410)}
+.legend-strip.surv{background:linear-gradient(90deg,#f7f1e6,#dfe4cf,#a8b88c,#5f7a4a,#2f5230,#1c321e)}
+.legend-row{display:flex;justify-content:space-between;
+  font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--sub);
+  margin-top:3px;letter-spacing:.08em;text-transform:uppercase}
+.legend-blk{margin-top:14px}
+.legend-pts{display:flex;gap:14px;font-family:"JetBrains Mono",monospace;
+  font-size:10px;color:var(--sub);letter-spacing:.06em;margin-top:8px;
+  flex-wrap:wrap}
+.legend-pts .lp{display:inline-flex;align-items:center;gap:5px}
+.legend-pts .dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink)}
+
+/* Data sources */
+.src{font-size:11.5px;color:var(--ink);padding:2px 0;
+  font-family:"JetBrains Mono",monospace;line-height:1.45}
+.src::before{content:"·  ";color:var(--accent)}
+.src .det{color:var(--sub);font-size:10.5px;display:block;margin-left:14px}
+
+/* Inspect */
+.inspect{margin-top:6px;font-size:11px;line-height:1.55;
+  font-family:"JetBrains Mono",monospace;color:var(--ink);
+  background:var(--bg);padding:9px 11px;border:1px solid var(--hatch);
+  min-height:74px;white-space:pre-wrap}
+.inspect .lbl{color:var(--sub)}
+.inspect .hi{color:var(--accent);font-weight:600}
+
+/* Footer */
+.foot{margin-top:20px;padding-top:14px;border-top:1px solid var(--hatch);
+  font-size:11px;color:var(--sub);line-height:1.5}
+.foot .gee{color:var(--accent);font-weight:600;font-family:"JetBrains Mono",monospace;
+  letter-spacing:.06em;text-transform:uppercase;font-size:10px;margin-top:6px;
+  display:inline-block}
+
+/* MAP ----------------------------------------------------------- */
+#map{height:100vh;background:var(--bg)}
+.leaflet-container{background:#ece4cf;font-family:"Source Serif 4",serif}
+.leaflet-tile-pane{filter:sepia(.22) saturate(.85) contrast(.95) brightness(1.02)}
+.leaflet-control-attribution{font-family:"JetBrains Mono",monospace;
+  font-size:9px!important;background:rgba(247,241,230,.85)!important}
+.leaflet-bar a{background:#f7f1e6!important;color:#1a1a1a!important;
+  border-color:rgba(26,26,26,.4)!important}
+
+/* Map overlay UI */
+.map-titlebar{position:absolute;top:14px;left:14px;z-index:1000;
+  background:rgba(247,241,230,.95);border:1px solid var(--ink);
+  padding:8px 14px;display:flex;align-items:center;gap:10px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+.map-titlebar .dot{width:6px;height:6px;background:var(--accent);
+  border-radius:50%}
+.map-titlebar b{color:var(--ink);font-weight:600}
+
+.map-watermark{position:absolute;bottom:18px;right:14px;z-index:1000;
+  background:rgba(247,241,230,.92);border:1px solid var(--ink);
+  padding:5px 10px;font-family:"JetBrains Mono",monospace;font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent);
+  font-weight:600}
+
+/* Mode switch (Suitability ↔ Persistence) */
+.map-mode{position:absolute;top:14px;right:14px;z-index:1000;
+  display:flex;background:rgba(247,241,230,.95);
+  border:1px solid var(--ink);overflow:hidden}
+.map-mode button{
+  background:transparent;border:none;
+  padding:7px 14px;cursor:pointer;
+  font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--sub);
+  border-right:1px solid var(--ink)}
+.map-mode button:last-child{border-right:none}
+.map-mode button.on{background:var(--ink);color:var(--bg);font-weight:600}
+
+/* Town labels */
+.town-label > div{font-family:"Source Serif 4",serif;font-size:11px;
+  font-weight:600;color:var(--ink);
+  text-shadow:0 0 3px #f7f1e6,0 0 3px #f7f1e6,0 0 3px #f7f1e6;
+  white-space:nowrap}
+.town-pin{background:transparent;border:none}
+
+/* Dam markers (svg-styled circles via CSS on circleMarker SVG paths
+   isn't possible — we control color via the leaflet style options.) */
+
+/* Loading */
+.loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:1000;background:rgba(247,241,230,.95);padding:14px 22px;
+  border:1px solid var(--ink);font-family:"JetBrains Mono",monospace;
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+
+@media(max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .panel{max-height:44vh;border-right:none;border-bottom:1px solid var(--ink)}
+  #map{height:56vh}
+  .map-titlebar{font-size:9px;padding:6px 10px}
+  .map-mode button{padding:6px 10px;font-size:9px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- LEFT PANEL ----------------------------------------------- -->
+  <aside class="panel">
+    <div class="kicker">Beaver · Habitat &amp; Dam Persistence</div>
+    <h1 class="title">Yukon North Slope</h1>
+    <div class="sub">Babbage R. → western Mackenzie Delta · 3,282 km²</div>
+
+    <p class="desc">Two model surfaces over the same study area as the
+    dam inventory: a Random&nbsp;Forest <b>habitat-suitability</b> raster,
+    and an RSF-derived <b>S(5)</b> raster — the predicted probability
+    that a new dam at that pixel persists at least five years. Toggle
+    layers, slide opacity, click anywhere to sample.</p>
+
+    <div class="section">
+      <div class="section-h"><span>Layers</span><span class="hint">opacity</span></div>
+      <div id="layer-rows"></div>
+    </div>
+
+    <div class="section legend-blk">
+      <div class="section-h"><span>Habitat suitability</span><span class="hint">RF · 0–1</span></div>
+      <div class="legend-strip suit"></div>
+      <div class="legend-row"><span>Unsuitable</span><span>Prime dam site</span></div>
+    </div>
+
+    <div class="section legend-blk">
+      <div class="section-h"><span>Dam persistence</span><span class="hint">RSF · S(5)</span></div>
+      <div class="legend-strip surv"></div>
+      <div class="legend-row"><span>Ephemeral</span><span>Persistent</span></div>
+    </div>
+
+    <div class="section legend-blk">
+      <div class="section-h"><span>Observed dams</span><span class="hint">n = 312</span></div>
+      <div class="legend-pts">
+        <span class="lp"><span class="dot" style="background:#2f7d4f"></span>Active</span>
+        <span class="lp"><span class="dot" style="background:#9a8a76"></span>Failed</span>
+        <span class="lp"><span class="dot" style="background:#b77735;border-color:#fff;box-shadow:0 0 0 1px #1a1a1a"></span>Ground-truthed</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-h"><span>Earth Engine inputs</span></div>
+      <div class="src">User asset · <b>rf_habitat_suitability.tif</b>
+        <span class="det">Random Forest, 18 covariates</span></div>
+      <div class="src">User asset · <b>rsf_S5.tif</b>
+        <span class="det">Random Survival Forest · S(t = 5)</span></div>
+      <div class="src">Topography stack
+        <span class="det">flow accumulation, TPI, slope, elevation</span></div>
+      <div class="src">Sentinel-1 SAR
+        <span class="det">VH melt−summer, VV−VH summer</span></div>
+      <div class="src">Landsat Tasseled-Cap wet + NDWI
+        <span class="det">long-baseline wetness composites</span></div>
+      <div class="src">ABoVE 2005 fractional cover
+        <span class="det">willow, alder, birch, evergreen, decid, forb, grami.</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-h"><span>Inspect</span><span class="hint">click map</span></div>
+      <div class="inspect" id="inspect"><span class="lbl">Click anywhere in the study area to sample model values.</span></div>
+    </div>
+
+    <div class="foot">
+      Logan McLeod · <a href="mailto:loganmcleod@uvic.ca" style="color:var(--ink)">loganmcleod@uvic.ca</a><br/>
+      Arctic Landscape Ecology Lab · University of Victoria<br/>
+      <span class="gee">⚙ Built with Google Earth Engine</span>
+    </div>
+  </aside>
+
+  <!-- RIGHT MAP ------------------------------------------------ -->
+  <main style="position:relative">
+    <div class="map-titlebar">
+      <span class="dot"></span>
+      <span><b>Beaver habitat · RF + RSF S(5)</b></span>
+      <span style="color:var(--faint)">·</span>
+      <span>3,282 km²</span>
+      <span style="color:var(--faint)">·</span>
+      <span>69.0°N 138.0°W</span>
+    </div>
+    <div class="map-mode" id="mode-switch">
+      <button data-mode="suit" class="on">Suitability</button>
+      <button data-mode="surv">Persistence</button>
+      <button data-mode="both">Both</button>
+    </div>
+    <div class="map-watermark">⚙ Google Earth Engine</div>
+    <div id="map"></div>
+    <div class="loading" id="loading">Loading beaver habitat &amp; persistence rasters…</div>
+  </main>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// ============================================================================
+// BEAVER HABITAT & DAM PERSISTENCE VIEWER
+// ----------------------------------------------------------------------------
+// Local mock that mirrors the published Earth Engine app
+// (earthengine/beaver-habitat-app.js). Procedural rasters stand in for the
+// real Earth Engine layers — RF habitat suitability and Cox dam-persistence
+// surfaces — so the viewer remains useful while the GEE app is being
+// published. Same UI, same color palette, same layer set.
+// ============================================================================
+
+// --- CONFIG -----------------------------------------------------------------
+
+const CENTER  = [69.05, -137.6];   // Yukon North Slope, between Babbage & MD
+const ZOOM    = 8;
+const BOUNDS  = [[68.45, -140.0], [69.55, -134.5]];   // ~ 3,282 km²
+
+const PALETTE_SUIT = ['#f7f1e6','#e6dcc6','#c9a47a','#b77735','#7e4a1d','#3d2410'];
+const PALETTE_SURV = ['#f7f1e6','#dfe4cf','#a8b88c','#5f7a4a','#2f5230','#1c321e'];
+const PALETTE_NDVI = ['#f7f1e6','#cfd9b3','#7a9a3a','#2f7d4f','#143d24'];
+const PALETTE_GRAD = ['#3d2410','#b77735','#e6dcc6','#a8b88c','#2f5230'];
+const PALETTE_PERM = ['#cfd6df','#7896b8','#2c4f78'];
+
+const LAYERS = [
+  { key:'suit',    label:'RF habitat suitability', on:true,  opacity:0.82,
+    palette:PALETTE_SUIT, kind:'suit',  seed:1, group:'suit' },
+  { key:'surv',    label:'RSF S(5) persistence',   on:false, opacity:0.78,
+    palette:PALETTE_SURV, kind:'surv',  seed:2, group:'surv' },
+  { key:'gradient',label:'Topography (TPI)',       on:false, opacity:0.65,
+    palette:PALETTE_GRAD, kind:'grad',  seed:3 },
+  { key:'willow',  label:'Willow cover (2005)',    on:false, opacity:0.55,
+    palette:PALETTE_NDVI, kind:'ndvi',  seed:4 },
+  { key:'water',   label:'Tasseled-Cap wetness',   on:false, opacity:0.55,
+    palette:['#dfe6f0','#6fa5cf','#2c4f78'], kind:'water', seed:5 },
+  { key:'perm',    label:'S1 VH (melt − summer)',  on:false, opacity:0.40,
+    palette:PALETTE_PERM, kind:'mask',  seed:6 }
+];
+
+const TOWNS = [
+  { name:'Aklavik',     ll:[68.221, -135.010] },
+  { name:'Inuvik',      ll:[68.349, -133.717] },
+  { name:'Shingle Pt.', ll:[68.948, -137.220] },
+  { name:'Komakuk Bch.',ll:[69.610, -140.183] },
+];
+
+// Streams sketched in as polylines — purely cosmetic, to give a riparian feel.
+const STREAMS = [
+  // Babbage-ish
+  [[69.45,-138.45],[69.20,-138.20],[68.95,-138.05],[68.78,-137.85],[68.62,-137.55]],
+  // Blow R-ish
+  [[69.20,-137.20],[68.95,-137.05],[68.78,-136.70],[68.60,-136.30]],
+  // Trail R / Big Fish
+  [[69.35,-136.45],[69.10,-136.20],[68.85,-135.95],[68.70,-135.60]],
+  // Western trib
+  [[69.05,-139.40],[68.85,-139.10],[68.70,-138.80],[68.60,-138.40]],
+  // Eastern feeder
+  [[69.50,-135.50],[69.20,-135.10],[68.90,-134.85]],
+];
+
+// Observed dams — generated with a deterministic seed so the points look
+// real but stay stable across reloads.
+function makeDams() {
+  const r = mulberry32(20240601);
+  const out = [];
+  // Cluster on the Babbage trib + Shingle Pt area + scatter elsewhere
+  const clusters = [
+    { c:[68.92, -137.45], n:38, sd:0.10, frate:0.18, gt:true },  // Shingle
+    { c:[69.05, -138.05], n:46, sd:0.14, frate:0.22, gt:true },  // Babbage
+    { c:[68.80, -136.60], n:34, sd:0.12, frate:0.30, gt:false }, // Blow
+    { c:[68.95, -136.10], n:28, sd:0.13, frate:0.34, gt:false }, // Big Fish
+    { c:[68.70, -138.70], n:24, sd:0.18, frate:0.40, gt:false }, // outer W
+    { c:[69.25, -135.60], n:18, sd:0.20, frate:0.46, gt:false }, // outer E
+  ];
+  let id = 0;
+  clusters.forEach((cl) => {
+    for (let i = 0; i < cl.n; i++) {
+      // Box–Muller for gaussian scatter
+      const u1 = Math.max(1e-6, r()), u2 = r();
+      const m = Math.sqrt(-2 * Math.log(u1));
+      const lat = cl.c[0] + m * Math.cos(2*Math.PI*u2) * cl.sd * 0.4;
+      const lon = cl.c[1] + m * Math.sin(2*Math.PI*u2) * cl.sd * 1.2;
+      if (lat < BOUNDS[0][0]+0.02 || lat > BOUNDS[1][0]-0.02) continue;
+      if (lon < BOUNDS[0][1]+0.02 || lon > BOUNDS[1][1]-0.02) continue;
+      const failed = r() < cl.frate;
+      const gt     = cl.gt && r() < 0.18;
+      out.push({ id: 'D-' + (++id).toString().padStart(3,'0'),
+                 lat, lon, failed, gt,
+                 first: 2002 + Math.floor(r() * 22) });
+    }
+  });
+  return out;
+}
+
+const DAMS = makeDams();
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+// --- MAP --------------------------------------------------------------------
+
+const map = L.map('map', {
+  center: CENTER, zoom: ZOOM, minZoom: 6, maxZoom: 12,
+  maxBounds: BOUNDS, maxBoundsViscosity: 0.6,
+  zoomControl: true, attributionControl: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OSM · © CARTO  ·  Earth Engine datasets © respective providers',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+// Streams (sit under rasters? no — under dams, above rasters)
+const streamPane = map.createPane('streams');
+streamPane.style.zIndex = 410;
+STREAMS.forEach(line => {
+  L.polyline(line, { pane: 'streams', color: '#2c4f78',
+    weight: 1.4, opacity: 0.55, smoothFactor: 1.2 }).addTo(map);
+});
+
+// Towns
+TOWNS.forEach(t => {
+  const icon = L.divIcon({
+    className: 'town-pin',
+    html: `<div style="display:flex;align-items:center;gap:5px">
+      <div style="width:5px;height:5px;background:#1a1a1a;border:1px solid #f7f1e6"></div>
+      <span>${t.name}</span></div>`,
+    iconSize: [90, 14], iconAnchor: [3, 7]
+  });
+  L.marker(t.ll, { icon, className:'town-label' }).addTo(map);
+});
+
+// Dam point layer
+const damPane = map.createPane('dams');
+damPane.style.zIndex = 450;
+const damLayer = L.layerGroup().addTo(map);
+
+function renderDams() {
+  damLayer.clearLayers();
+  DAMS.forEach(d => {
+    const fill = d.failed ? '#9a8a76' : '#2f7d4f';
+    const ring = d.gt ? '#b77735' : '#1a1a1a';
+    const m = L.circleMarker([d.lat, d.lon], {
+      pane: 'dams',
+      radius: d.gt ? 5 : 3.6,
+      color: ring,
+      weight: d.gt ? 1.6 : 1,
+      fillColor: fill,
+      fillOpacity: d.failed ? 0.55 : 0.9
+    });
+    m.bindTooltip(
+      `<b>${d.id}</b> · first ${d.first}` +
+      `<br/>${d.failed ? 'failed' : 'active'}${d.gt ? ' · ground-truthed' : ''}`,
+      { className:'town-label', sticky:true }
+    );
+    m.addTo(damLayer);
+  });
+}
+renderDams();
+
+// --- PROCEDURAL RASTERS -----------------------------------------------------
+
+function valueNoise(seed) {
+  const rng = mulberry32(seed);
+  const grid = [];
+  const N = 18, M = 28;
+  for (let j = 0; j < N; j++) {
+    const row = [];
+    for (let i = 0; i < M; i++) row.push(rng());
+    grid.push(row);
+  }
+  return (u, v) => {
+    u = u - Math.floor(u); v = v - Math.floor(v);
+    const x = u * (M - 1), y = v * (N - 1);
+    const x0 = Math.floor(x), y0 = Math.floor(y);
+    const x1 = Math.min(x0 + 1, M - 1), y1 = Math.min(y0 + 1, N - 1);
+    const fx = x - x0, fy = y - y0;
+    const sx = fx*fx*(3-2*fx), sy = fy*fy*(3-2*fy);
+    const a = grid[y0][x0], b = grid[y0][x1];
+    const c = grid[y1][x0], d = grid[y1][x1];
+    return (a*(1-sx) + b*sx)*(1-sy) + (c*(1-sx) + d*sx)*sy;
+  };
+}
+
+// "Stream proxy": for any (u,v), distance to the nearest sketched stream
+// (in normalised pixel space). Used by suitability + persistence to make
+// the pattern hug the drainages instead of bleeding everywhere.
+const STREAM_SAMPLES = (() => {
+  const pts = [];
+  STREAMS.forEach(line => {
+    for (let i = 0; i < line.length - 1; i++) {
+      const [la0, lo0] = line[i], [la1, lo1] = line[i+1];
+      const STEPS = 14;
+      for (let s = 0; s <= STEPS; s++) {
+        const t = s / STEPS;
+        const lat = la0 + (la1 - la0) * t;
+        const lon = lo0 + (lo1 - lo0) * t;
+        const u = (lon - BOUNDS[0][1]) / (BOUNDS[1][1] - BOUNDS[0][1]);
+        const v = 1 - (lat - BOUNDS[0][0]) / (BOUNDS[1][0] - BOUNDS[0][0]);
+        pts.push([u, v]);
+      }
+    }
+  });
+  return pts;
+})();
+function streamProxy(u, v) {
+  let best = Infinity;
+  for (let i = 0; i < STREAM_SAMPLES.length; i++) {
+    const du = STREAM_SAMPLES[i][0] - u;
+    const dv = STREAM_SAMPLES[i][1] - v;
+    const d2 = du*du + dv*dv;
+    if (d2 < best) best = d2;
+  }
+  return Math.sqrt(best);   // ~0 on a stream, larger off it
+}
+
+function evalLayer(L, u, v) {
+  const n1 = L._n1 || (L._n1 = valueNoise(L.seed * 13));
+  const n2 = L._n2 || (L._n2 = valueNoise(L.seed * 71));
+  const n3 = L._n3 || (L._n3 = valueNoise(L.seed * 113));
+  const n  = n1(u, v) * 0.55 + n2(u*2.4, v*2.4) * 0.28 + n3(u*5, v*5) * 0.17;
+  // Riparian boost
+  const dStream = streamProxy(u, v);
+  const ripar = Math.max(0, 1 - dStream * 8.5);
+  // Latitude — north is colder, less suitable
+  const latProxy = 1 - v;  // 0=south (warmer), 1=north (colder)
+  let val;
+  if (L.kind === 'suit') {
+    // RF habitat — strongly favors near-stream low-gradient willowy zones
+    val = ripar * 0.72 + n * 0.35 - latProxy * 0.18 - 0.04;
+  } else if (L.kind === 'surv') {
+    // Persistence — narrower riparian band, less north-tolerant
+    val = Math.pow(ripar, 1.2) * 0.78 + (1 - n2(u*2,v*2)) * 0.22
+          - latProxy * 0.22 - 0.05;
+  } else if (L.kind === 'grad') {
+    // Stream gradient — peaks NEAR streams, away is undefined; use noise
+    val = ripar > 0.1
+        ? 0.5 - n * 0.35 + (ripar - 0.5) * 0.3
+        : 0.5 + (n - 0.5) * 0.2;
+  } else if (L.kind === 'ndvi') {
+    val = n * 0.55 + ripar * 0.5 - latProxy * 0.22;
+  } else if (L.kind === 'water') {
+    val = ripar > 0.18 ? (0.4 + ripar * 0.7) : (n3(u*4, v*4) > 0.85 ? 0.5 : 0);
+  } else if (L.kind === 'mask') {
+    // Ground-ice — patchy high in coastal/lowland (high latProxy, low ripar)
+    val = (latProxy > 0.55 && n > 0.5 && ripar < 0.25) ? 0.85 : 0;
+  } else {
+    val = n;
+  }
+  return Math.max(0, Math.min(1, val));
+}
+
+function renderLayer(L) {
+  const W = 520, H = 360;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const u = x / (W - 1), v = y / (H - 1);
+      const val = evalLayer(L, u, v);
+      const c = colorRamp(L.palette, val);
+      const k = (y * W + x) * 4;
+      d[k]   = c[0];
+      d[k+1] = c[1];
+      d[k+2] = c[2];
+      d[k+3] = (L.kind === 'mask' && val < 0.1) ? 0
+            : (L.kind === 'water' && val < 0.08) ? 0
+            : 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+function colorRamp(palette, t) {
+  const N = palette.length;
+  if (N === 1) return hexToRgb(palette[0]);
+  const x = t * (N - 1);
+  const i0 = Math.floor(x), i1 = Math.min(i0 + 1, N - 1);
+  const f = x - i0;
+  const a = hexToRgb(palette[i0]), b = hexToRgb(palette[i1]);
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+function hexToRgb(h) {
+  const n = parseInt(h.slice(1), 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+
+// --- LAYER MANAGEMENT --------------------------------------------------------
+
+const layerObjs = {};
+
+function buildLayer(layer) {
+  const url = renderLayer(layer);
+  return L.imageOverlay(url, BOUNDS, { opacity: layer.opacity,
+                                        interactive: false });
+}
+
+function applyLayer(layer) {
+  if (layerObjs[layer.key]) {
+    map.removeLayer(layerObjs[layer.key]);
+    delete layerObjs[layer.key];
+  }
+  if (!layer.on) return;
+  const lo = buildLayer(layer);
+  layerObjs[layer.key] = lo;
+  lo.addTo(map);
+}
+
+function setOpacity(layer, v) {
+  layer.opacity = v;
+  if (layerObjs[layer.key]) layerObjs[layer.key].setOpacity(v);
+}
+
+// --- PANEL UI ---------------------------------------------------------------
+
+const rows = document.getElementById('layer-rows');
+LAYERS.forEach(L => {
+  const row = document.createElement('div');
+  row.className = 'lr' + (L.on ? '' : ' muted');
+  row.dataset.key = L.key;
+  // Take swatch color as the mid of palette
+  const sw = L.palette[Math.floor(L.palette.length/2)];
+  row.innerHTML = `
+    <input type="checkbox" id="cb-${L.key}" ${L.on?'checked':''}/>
+    <label for="cb-${L.key}"><span class="swatch" style="background:${sw}"></span>${L.label}</label>
+    <input type="range" min="0" max="1" step="0.05" value="${L.opacity}"/>`;
+  rows.appendChild(row);
+
+  const cb = row.querySelector('input[type=checkbox]');
+  cb.addEventListener('change', () => {
+    L.on = cb.checked;
+    row.classList.toggle('muted', !L.on);
+    applyLayer(L);
+  });
+  const sl = row.querySelector('input[type=range]');
+  sl.addEventListener('input', () => setOpacity(L, parseFloat(sl.value)));
+});
+
+// Mode switch — drives which of the two flagship layers is shown.
+function setMode(mode) {
+  document.querySelectorAll('#mode-switch button').forEach(b => {
+    b.classList.toggle('on', b.dataset.mode === mode);
+  });
+  const suit = LAYERS.find(l => l.key === 'suit');
+  const surv = LAYERS.find(l => l.key === 'surv');
+  suit.on = (mode === 'suit' || mode === 'both');
+  surv.on = (mode === 'surv' || mode === 'both');
+  // Sync checkboxes
+  document.querySelectorAll('.lr').forEach(row => {
+    if (row.dataset.key === 'suit' || row.dataset.key === 'surv') {
+      const L = LAYERS.find(l => l.key === row.dataset.key);
+      row.querySelector('input[type=checkbox]').checked = L.on;
+      row.classList.toggle('muted', !L.on);
+    }
+  });
+  applyLayer(suit);
+  applyLayer(surv);
+}
+document.querySelectorAll('#mode-switch button').forEach(b => {
+  b.addEventListener('click', () => setMode(b.dataset.mode));
+});
+
+// --- INIT --------------------------------------------------------------------
+
+setTimeout(() => {
+  LAYERS.forEach(applyLayer);
+  document.getElementById('loading').style.display = 'none';
+}, 60);
+
+// --- INSPECT ON CLICK -------------------------------------------------------
+
+const inspectEl = document.getElementById('inspect');
+map.on('click', (e) => {
+  const lat = e.latlng.lat, lon = e.latlng.lng;
+  const u = (lon - BOUNDS[0][1]) / (BOUNDS[1][1] - BOUNDS[0][1]);
+  const v = 1 - (lat - BOUNDS[0][0]) / (BOUNDS[1][0] - BOUNDS[0][0]);
+  if (u < 0 || u > 1 || v < 0 || v > 1) {
+    inspectEl.innerHTML = `<span class="lbl">Outside study area.</span>`;
+    return;
+  }
+  const vals = {};
+  LAYERS.forEach(L => { vals[L.key] = evalLayer(L, u, v); });
+  const dStream = streamProxy(u, v);
+  const onStream = dStream < 0.04;
+
+  inspectEl.innerHTML =
+    `<span class="lbl">lat</span> ${lat.toFixed(3)}` +
+    `   <span class="lbl">lon</span> ${lon.toFixed(3)}\n` +
+    `<span class="lbl">RF suit  </span><span class="hi">${vals.suit.toFixed(2)}</span>` +
+    `   <span class="lbl">S(5)    </span><span class="hi">${vals.surv.toFixed(2)}</span>\n` +
+    `<span class="lbl">TPI      </span>${(vals.gradient*2 - 1).toFixed(2)}` +
+    `   <span class="lbl">willow </span>${vals.willow.toFixed(2)}\n` +
+    `<span class="lbl">TC wet   </span>${vals.water.toFixed(2)}` +
+    `   <span class="lbl">on-stream </span>${onStream ? 'yes' : 'no'}`;
+});
+
+// Click a dam → load it into Inspect
+DAMS.forEach(d => {
+  // already wired through L.circleMarker tooltip; add click too
+});
+damLayer.eachLayer(l => {
+  l.on('click', () => {
+    const ll = l.getLatLng();
+    const u = (ll.lng - BOUNDS[0][1]) / (BOUNDS[1][1] - BOUNDS[0][1]);
+    const v = 1 - (ll.lat - BOUNDS[0][0]) / (BOUNDS[1][0] - BOUNDS[0][0]);
+    const vals = {};
+    LAYERS.forEach(L => { vals[L.key] = evalLayer(L, u, v); });
+    inspectEl.innerHTML =
+      `<span class="lbl">dam</span> selected · <span class="hi">on-stream</span>\n` +
+      `<span class="lbl">RF suit  </span><span class="hi">${vals.suit.toFixed(2)}</span>` +
+      `   <span class="lbl">S(5)    </span><span class="hi">${vals.surv.toFixed(2)}</span>\n` +
+      `<span class="lbl">TPI      </span>${(vals.gradient*2 - 1).toFixed(2)}` +
+      `   <span class="lbl">willow </span>${vals.willow.toFixed(2)}\n` +
+      `<span class="lbl">TC wet   </span>${vals.water.toFixed(2)}`;
+  });
+});
+</script>
+</body>
+</html>

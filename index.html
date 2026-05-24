@@ -128,7 +128,7 @@
   .panel .lede   { font-family: "Source Serif 4", Georgia, serif; font-size: 14px; line-height: 1.5; margin-top: 4px; }
   .panel .lede .panel-sub { font-size: 14px; line-height: 1.5; color: var(--ink); }
   .panel .lede .panel-blurb { font-size: 14px; line-height: 1.5; color: var(--ink); margin-top: 10px; }
-  .panel .btnrow { display: flex; gap: 8px; margin-top: auto; }
+  .panel .btnrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
   .panel .btn {
     border: 1.5px solid var(--ink); background: var(--paper);
     padding: 6px 12px;
@@ -246,10 +246,10 @@ const SITES = [
   {
     id: 'beaver', kind: 'phd', status: 'active',
     name: 'Beaver Expansion',
-    sub: 'Beaver range expansion onto the North Slope',
+    sub: 'Beaver range expansion within the Yukon North Slope',
     lat: 68.948, lon: -137.221, // Shingle Point, YT
     region: 'Yukon North Slope', method: 'remote sensing + field',
-    blurb: 'Tracking beaver colonization of arctic streams along the Yukon coast. Combining satellite-detected dam ponds with field verification at Shingle Point and adjacent drainages.',
+    blurb: 'An inventory of beaver dams between the Babbage River and the western Mackenzie Delta used to model beaver habitat and make predictions about what the future holds.',
     stats: [['CHAPTER', '1']],
     pubs: [],
     href: 'beaver-expansion.html',
@@ -257,10 +257,10 @@ const SITES = [
   {
     id: 'moose', kind: 'phd', status: 'active',
     name: 'Moose Habitat Change',
-    sub: 'Moose habitat & landscape change in the Richardsons (working title)',
+    sub: 'Moose movement and habitat use in Yukon\'s Arctic moose populations',
     lat: 67.0, lon: -136.5, // Richardson Mtns
     region: 'Richardson Mountains, YT/NT', method: 'field + RS',
-    blurb: 'How shrubification and changing snow regimes are reshaping moose habitat in the Richardson Mountains. Work in collaboration with Gwich\u2019in co-management partners.',
+    blurb: 'How shrubification and changing snow regimes are reshaping moose habitat in the Richardson Mountains.',
     stats: [['CHAPTER', '2']],
     pubs: [],
     href: 'moose-habitat-change.html',
@@ -268,10 +268,10 @@ const SITES = [
   {
     id: 'songbirds', kind: 'phd', status: 'active',
     name: 'Songbird Response to Tundra Change',
-    sub: 'Songbird community response along the Dempster (working title)',
+    sub: 'Acoustic monitoring along the Inuvik–Tuktoyaktuk Highway',
     lat: 68.70, lon: -133.40, // between Inuvik & Tuk
     region: 'Inuvik \u2013 Tuktoyaktuk corridor', method: 'acoustic + RS',
-    blurb: 'Passive acoustic monitoring along the Inuvik\u2013Tuktoyaktuk Highway to track songbird community shifts as the tundra greens, browns, and floods.',
+    blurb: 'Passive acoustic monitoring at thaw slumps, drained-lake basins, and recent tundra burns — paired with undisturbed controls — to measure how bird abundances and community composition shift with disturbance.',
     stats: [['CHAPTER', '3']],
     pubs: [],
     href: 'listening-to-a-changing-tundra.html',
@@ -281,7 +281,7 @@ const SITES = [
   {
     id: 'greyhead', kind: 'proj', status: 'writing',
     name: 'Grey-headed Chickadee',
-    sub: 'Search for a coveted, sparsely distributed boreal-tundra species',
+    sub: "A search for North America's rarest chickadee — a disappearing boreal-tundra species",
     lat: 67.57, lon: -139.82, // Old Crow
     region: 'Yukon · Alaska', method: 'field + acoustic',
     blurb: 'In 2019, we worked with Dr. Travis Booms at ADF&G to survey all historical Yukon locations for Grey-headed Chickadee but did not detect any. Followup work led to an unsolicited COSEWIC status report and an Endangered designation in May 2024.',
@@ -292,13 +292,17 @@ const SITES = [
   {
     id: 'railradar', kind: 'proj', status: 'published',
     name: 'Yellow Rail Abundance',
-    sub: 'Yellow Rail abundance from Sentinel-1 + Sentinel-2',
+    sub: 'Long-term monitoring of wetland birds in the Oil Sands, focused on Yellow Rail populations in the Lower Athabasca',
     lat: 56.6, lon: -111.4, // northern AB / oil sands
     region: 'boreal AB', method: 'remote sensing',
-    blurb: 'Spatially explicit abundance modelling of a wetland obligate using radar + optical satellite data.',
+    blurb: 'Spatially explicit abundance modelling of Yellow Rail in the oil sands region using Sentinel-1 radar and Sentinel-2 optical satellite data',
     stats: [['SITES', '120']],
     pubs: ['McLeod, DeLancey & Bayne (2022). Can. J. Remote Sensing 48(1).',
            'Hedley, McLeod et al. (2020). Yellow Rail in oil sands. Avian Cons. Ecol. 15(1).'],
+    links: [
+      { label: 'abundance paper', href: 'https://doi.org/10.1080/07038992.2021.2014797' },
+      { label: 'oil sands paper', href: 'https://doi.org/10.5751/ACE-01538-150110' },
+    ],
   },
   {
     id: 'railrange', kind: 'proj', status: 'published',
@@ -306,9 +310,12 @@ const SITES = [
     sub: 'Yellow Rail beyond known range limits',
     lat: 61.36, lon: -117.66, // Fort Providence, NT
     region: 'NT · boreal', method: 'acoustic + occupancy',
-    blurb: 'Documenting Yellow Rail occupancy north of previously known range limits, including detections near Fort Providence.',
+    blurb: 'A high-density Yellow Rail population documented north of previously known range limits in the Northwest Territories',
     stats: [['REGION', 'NT']],
     pubs: ['McLeod et al. (2021). Yellow Rail beyond range limits. Waterbirds 44(2).'],
+    links: [
+      { label: 'read paper', href: 'https://doi.org/10.1675/063.044.0204' },
+    ],
   },
   {
     id: 'beringia', kind: 'proj', status: 'in prep',
@@ -316,7 +323,7 @@ const SITES = [
     sub: 'Endemic plants & xeric meadows of South Beringia',
     lat: 64.06, lon: -139.43, // Dawson City, YT
     region: 'Yukon', method: 'remote sensing',
-    blurb: 'In-prep remote sensing framework with Willier, Bennett, Cannings, DeLancey & Kuhn for endemic plants of unglaciated Yukon.',
+    blurb: 'In-prep remote sensing framework with Willier, Bennett, Cannings & DeLancey for endemic plants of unglaciated Yukon.',
     stats: [['MEADOWS', '~80'], ['IN PREP', 'yes']],
     pubs: ['Willier, McLeod et al. (in prep). Mapping endemic plants & xeric meadows in S. Beringia.'],
   },
@@ -469,10 +476,18 @@ function selectSite(id) {
   document.getElementById('p-lede').innerHTML =
     `<div class="panel-sub">${s.sub}</div><div class="panel-blurb">${s.blurb}</div>`;
 
-  // single link
+  // links (single or multiple)
   const btns = document.getElementById('p-btns');
   const href = s.href || '';
-  if (href) {
+  const links = Array.isArray(s.links) ? s.links : [];
+  if (links.length) {
+    btns.innerHTML = links.map((l, i) => {
+      const isExternal = l.href.startsWith('http');
+      const target = isExternal ? ' target="_blank" rel="noopener"' : '';
+      const cls = (i === 0 && !isExternal) ? 'btn accent' : 'btn';
+      return `<a class="${cls}" href="${l.href}"${target}>${l.label} →</a>`;
+    }).join('');
+  } else if (href) {
     const isExternal = href.startsWith('http');
     const target = isExternal ? ' target="_blank" rel="noopener"' : '';
     const label = isExternal ? 'read paper →' : 'open project →';

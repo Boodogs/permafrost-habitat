@@ -122,9 +122,6 @@ function GhCiteContact() {
           <div>Logan McLeod</div>
           <div style={{ color: 'var(--sub)' }}>PhD candidate · Arctic Landscape Ecology Lab</div>
           <div style={{ marginTop: 8 }}><a href="mailto:loganmcleod@uvic.ca">loganmcleod@uvic.ca</a></div>
-          <div className="mono" style={{ fontSize: 12, color: 'var(--sub)', marginTop: 4 }}>
-            <a href="https://orcid.org/0000-0003-4528-1523" target="_blank" rel="noopener">orcid.org/0000-0003-4528-1523</a>
-          </div>
         </div>
       </div>
     </div>);

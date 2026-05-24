@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>This page must still be migrating — Logan McLeod</title>
+<meta name="description" content="404 — this page isn't ready yet. Check back later."/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png"/>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png"/>
+<link rel="icon" type="image/png" sizes="180x180" href="favicon-180.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="beaver-shared.css"/>
+
+<style>
+  body { margin: 0; background: #f7f1e6; }
+
+  .nf-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 80px 32px 100px;
+    text-align: center;
+  }
+
+  .nf-photo {
+    width: 128px;
+    height: 128px;
+    margin: 0 auto 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--ink);
+    background: #efe7d6;
+  }
+  .nf-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .nf-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .nf-head {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 400;
+    font-size: 38px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+
+  .nf-body {
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--sub);
+    margin: 0 auto;
+    max-width: 44ch;
+  }
+
+  .nf-back {
+    margin-top: 36px;
+  }
+  .nf-back a {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 2px;
+  }
+  .nf-back a:hover { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .nf-wrap { padding: 56px 24px 60px; }
+    .nf-head { font-size: 30px; }
+  }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="beaver-variants.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  function NotFoundPage() {
+    return (
+      <div className="bv">
+        <BvHeader activeTab="research" />
+        <div className="nf-wrap">
+
+          <div className="nf-photo">
+            <img src="images/jaeger.jpg" alt="Long-tailed Jaeger on a spruce top" />
+          </div>
+
+          <div className="nf-tag">404 · Under construction</div>
+          <h1 className="nf-head">This page is still migrating.</h1>
+          <p className="nf-body">Check back later.</p>
+
+          <div className="nf-back">
+            <a id="nf-back-link" href="index.html">← Back to research</a>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<NotFoundPage />);
+
+  // Make the back link contingent on referrer — if they came from another
+  // page on this site, send them back there; otherwise fall back to research.
+  setTimeout(() => {
+    try {
+      const link = document.getElementById('nf-back-link');
+      const ref = document.referrer;
+      if (link && ref) {
+        const refUrl = new URL(ref);
+        const here = new URL(window.location.href);
+        if (refUrl.origin === here.origin && refUrl.pathname !== here.pathname) {
+          link.href = ref;
+          link.textContent = '← Back to where you were';
+        }
+      }
+    } catch (e) { /* keep default */ }
+  }, 0);
+</script>
+</body>
+</html>

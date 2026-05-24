@@ -1,13 +1,13 @@
 // Beaver Expansion — three layout variants of the same content.
 // Embeds widgets/beaver-forecast-viewer.html via iframe.
 
-const BV_TITLE = <>Beaver Expansion onto the <em>North Slope</em></>;
-const BV_DECK = "Tracking beaver occupancy of Arctic streams along the Yukon coast — combining satellite-detected dam ponds with field verification at Shingle Point and adjacent drainages.";
+const BV_TITLE = <>Beaver Expansion onto the <em style={{ color: 'var(--phd)' }}>North Slope</em></>;
+const BV_DECK = "Mapping beaver dams across the Yukon North Slope, and modelling where they are likely to go from here.";
 
 const BV_TLDR_PARAS = [
-"Beavers are moving north. Across the western Arctic, dams and ponds are appearing in streams where, a generation ago, there were none. The implications for permafrost, hydrology, fish, and waterbird habitat are real, but the basic question — where, how fast, and into which streams — is still mostly open.",
-"This chapter combines two threads. The first is a remote-sensing record: high-resolution satellite imagery of the Yukon coast, scanned for the spectral and structural signatures of new dam-impounded ponds. The second is fieldwork at Shingle Point and adjacent drainages, where I verify detections, measure ponds, and document what beavers find when they get there.",
-"The forecast viewer below is one early product of that work — a simple per-dam offspring model, fit to a small number of seed colonies, projected forward over the network of suitable streams. It is deliberately rough; treating it as a thinking tool, not a prediction."];
+"Beavers were not on the North Slope. The first dams here appeared in the late 2000s — Inuvialuit hunters reported seeing them in 2008. We've now mapped 138 across 3,282 km² of Yukon coast, between the Babbage and the western Mackenzie Delta. Last summer one was spotted swimming in the Arctic Ocean, off Shingle Point.",
+"Dams were found by working through the high-resolution satellite archive year by year. For each one we logged when it first appeared and when (if ever) it failed. In summer 2024 we ground-truthed the inventory by helicopter and worked six dams on foot — pond bathymetry, vegetation, and drone orthomosaics.",
+"The inventory feeds three models. A habitat-suitability surface asks where the landscape is best for beaver dams. A survival model asks which physical settings hold dams over time. A spatial simulation, calibrated against the inventory, runs the pattern forward to 2050. The forecast viewer below is one window onto that simulation."];
 
 
 function BvHeader({ activeTab = 'research' }) {
@@ -34,7 +34,7 @@ function BvMetaBar() {
       <span className="chip"><span className="dot"></span>PhD chapter 01</span>
       <span>Yukon North Slope</span>
       <span>REMOTE SENSING</span>
-      <span>FIELD</span>
+      <span>BAYESIAN COMPUTATION</span>
     </div>);
 
 }
@@ -43,15 +43,45 @@ function BvCiteContact() {
   return (
     <div className="bv-foot">
       <div>
+        <h3>Companion tool</h3>
+        <div style={{ fontSize: 14, lineHeight: 1.5 }}>
+          <a href="beaver-habitat-app.html">Beaver habitat &amp; dam persistence — Earth Engine app →</a>
+        </div>
+      </div>
+      <div>
         <h3>Contact</h3>
         <div className="bv-contact">
           <div>Logan McLeod</div>
           <div style={{ color: 'var(--sub)' }}>PhD candidate · Arctic Landscape Ecology Lab</div>
           <div style={{ marginTop: 8 }}><a href="mailto:loganmcleod@uvic.ca">loganmcleod@uvic.ca</a></div>
-          <div className="mono" style={{ fontSize: 12, color: 'var(--sub)', marginTop: 4 }}><a href="https://orcid.org/0000-0003-4528-1523" target="_blank" rel="noopener">orcid.org/0000-0003-4528-1523</a></div>
         </div>
       </div>
     </div>);
+
+}
+
+function BvCompanionLink() {
+  return (
+    <a href="beaver-habitat-app.html" className="bv-companion-link" style={{
+      display: 'block',
+      marginTop: 28,
+      padding: '16px 20px',
+      border: '1px solid var(--ink)',
+      background: 'var(--paper)',
+      textDecoration: 'none',
+      color: 'var(--ink)'
+    }}>
+      <div className="mono" style={{
+        fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+        color: 'var(--accent)', fontWeight: 600, marginBottom: 6
+      }}>Companion tool →</div>
+      <div style={{
+        fontFamily: "'Source Serif 4', serif", fontSize: 16, lineHeight: 1.4
+      }}>
+        <b style={{ fontWeight: 500 }}>Earth Engine App.</b>{' '}
+        Interact with our models! Click anywhere in the study area and ask two questions: Is this good beaver habitat? Will a dam here still be standing in five years?
+      </div>
+    </a>);
 
 }
 
@@ -66,9 +96,9 @@ function BvEmbed({ caption = true }) {
       
       {caption &&
       <div className="bv-embed-cap">
-          <span className="label">Fig. 1</span>
-          <span>Press <b>play</b> to watch ponds spread; drag the year scrubber to jump to a specific point.</span>
-          <span className="arrow">↳ tip: pan & zoom the map; the side panel summarizes detected ponds.</span>
+          <span className="label"></span>
+          <span>Press <b>play</b> to watch dams spread; drag the year slider to jump to a specific point.</span>
+          <span className="arrow">↳ pan & zoom the map; the side panel summarizes detected dams.</span>
         </div>
       }
     </div>);
@@ -98,24 +128,28 @@ function BeaverV1() {
 
         <BvHeroPhoto style={{ height: 280, marginTop: 36 }} />
 
-        <div style={{ marginTop: 36 }}>
-          <BvEmbed />
+        <div className="bv-prose" style={{ maxWidth: 760, marginTop: 36 }}>
+          <span className="small-cap">In short</span>
+          <p className="lead">{BV_TLDR_PARAS[0]}</p>
         </div>
 
-        <hr className="bv-divider" />
-
-        <div className="bv-prose" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+        <div className="bv-prose" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginTop: 36 }}>
           <div>
-            <span className="small-cap">In short</span>
-            <p className="lead">{BV_TLDR_PARAS[0]}</p>
+            <span className="small-cap">Study area &amp; inventory</span>
+            <p>{BV_TLDR_PARAS[1]}</p>
           </div>
           <div>
-            <p>{BV_TLDR_PARAS[1]}</p>
+            <span className="small-cap">Models</span>
             <p>{BV_TLDR_PARAS[2]}</p>
           </div>
         </div>
 
-        <hr className="bv-divider" />
+        <BvCompanionLink />
+
+        <div style={{ marginTop: 36 }}>
+          <BvEmbed />
+        </div>
+
         <BvCiteContact />
       </main>
     </div>);
@@ -151,8 +185,8 @@ function BeaverV2() {
           </span>
         </div>
         <BvEmbed />
+        <BvCompanionLink />
 
-        <hr className="bv-divider" />
         <BvCiteContact />
       </main>
     </div>);
@@ -201,17 +235,19 @@ function BeaverV3() {
               <p>{BV_TLDR_PARAS[2]}</p>
             </div>
             <BvEmbed />
+            <BvCompanionLink />
           </div>
           <div className="bv-margin">
             The model is per-dam, not per-colony. It under-counts dispersal across drainage divides — which I think is exactly what's happening at Shingle Pt.
           </div>
         </div>
 
-        <hr className="bv-divider" />
         <BvCiteContact />
       </main>
     </div>);
 
 }
 
-Object.assign(window, { BeaverV1, BeaverV2, BeaverV3, BvHeader });
+function SiteFooter() {return null;}
+
+Object.assign(window, { BeaverV1, BeaverV2, BeaverV3, BvHeader, BvCompanionLink, SiteFooter });

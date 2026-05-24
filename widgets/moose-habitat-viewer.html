@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Moose Habitat Suitability — Earth Engine Explorer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#1a1a1a; --sub:#555; --faint:#999;
+  --bg:#f7f1e6; --paper:#fff; --hatch:#e6dcc6;
+  --accent:#b77735; --phd:#2f7d4f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif;font-size:14px}
+.app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+
+/* PANEL --------------------------------------------------------- */
+.panel{background:var(--paper);border-right:1px solid var(--ink);
+  padding:22px 24px;overflow-y:auto}
+.kicker{font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  font-weight:600;margin-bottom:4px}
+.title{font-family:"Fraunces",serif;font-weight:500;font-size:28px;
+  line-height:1.05;letter-spacing:-0.01em;margin:0 0 4px}
+.sub{font-size:12px;color:var(--sub);margin-bottom:14px}
+.desc{font-size:13px;line-height:1.5;color:var(--ink);margin:0 0 18px;
+  text-wrap:pretty}
+
+.section{margin-top:18px}
+.section-h{font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  font-weight:600;border-bottom:1px solid var(--hatch);
+  padding-bottom:4px;margin-bottom:8px}
+
+/* Layer rows */
+.lr{display:grid;grid-template-columns:18px 1fr 70px;
+  align-items:center;gap:8px;padding:5px 0;font-size:13px}
+.lr label{cursor:pointer}
+.lr input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;
+  cursor:pointer;margin:0}
+.lr input[type=range]{accent-color:var(--accent);width:70px;margin:0}
+.lr.muted{opacity:.55}
+
+/* Legend */
+.legend-strip{height:14px;width:100%;border:1px solid var(--ink);
+  background:linear-gradient(90deg,#f7f1e6,#e6dcc6,#c9a47a,#b77735,#7e4a1d,#3d2410)}
+.legend-row{display:flex;justify-content:space-between;
+  font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--sub);
+  margin-top:3px;letter-spacing:.08em;text-transform:uppercase}
+
+/* Data sources */
+.src{font-size:11.5px;color:var(--ink);padding:2px 0;
+  font-family:"JetBrains Mono",monospace}
+.src::before{content:"·  ";color:var(--accent)}
+
+/* Inspect */
+.inspect{margin-top:6px;font-size:11px;line-height:1.5;
+  font-family:"JetBrains Mono",monospace;color:var(--ink);
+  background:var(--bg);padding:8px 10px;border:1px solid var(--hatch);
+  min-height:62px;white-space:pre-wrap}
+.inspect .lbl{color:var(--sub)}
+
+/* Footer */
+.foot{margin-top:20px;padding-top:14px;border-top:1px solid var(--hatch);
+  font-size:11px;color:var(--sub);line-height:1.5}
+.foot .gee{color:var(--accent);font-weight:600;font-family:"JetBrains Mono",monospace;
+  letter-spacing:.06em;text-transform:uppercase;font-size:10px;margin-top:6px;
+  display:inline-block}
+
+/* MAP ----------------------------------------------------------- */
+#map{height:100vh;background:var(--bg)}
+.leaflet-container{background:#ece4cf;font-family:"Source Serif 4",serif}
+.leaflet-tile-pane{filter:sepia(.22) saturate(.85) contrast(.95) brightness(1.02)}
+.leaflet-control-attribution{font-family:"JetBrains Mono",monospace;
+  font-size:9px!important;background:rgba(247,241,230,.85)!important}
+.leaflet-bar a{background:#f7f1e6!important;color:#1a1a1a!important;
+  border-color:rgba(26,26,26,.4)!important}
+
+/* Map overlay UI */
+.map-titlebar{position:absolute;top:14px;left:14px;z-index:1000;
+  background:rgba(247,241,230,.95);border:1px solid var(--ink);
+  padding:8px 14px;display:flex;align-items:center;gap:10px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+.map-titlebar .dot{width:6px;height:6px;background:var(--accent);
+  border-radius:50%}
+.map-titlebar b{color:var(--ink);font-weight:600}
+
+.map-watermark{position:absolute;bottom:18px;right:14px;z-index:1000;
+  background:rgba(247,241,230,.92);border:1px solid var(--ink);
+  padding:5px 10px;font-family:"JetBrains Mono",monospace;font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent);
+  font-weight:600}
+
+/* Town labels */
+.town-label > div{font-family:"Source Serif 4",serif;font-size:11px;
+  font-weight:600;color:var(--ink);
+  text-shadow:0 0 3px #f7f1e6,0 0 3px #f7f1e6,0 0 3px #f7f1e6;
+  white-space:nowrap}
+.town-pin{background:transparent;border:none}
+
+/* Loading */
+.loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:1000;background:rgba(247,241,230,.95);padding:14px 22px;
+  border:1px solid var(--ink);font-family:"JetBrains Mono",monospace;
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+
+@media(max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .panel{max-height:42vh;border-right:none;border-bottom:1px solid var(--ink)}
+  #map{height:58vh}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- LEFT PANEL ----------------------------------------------- -->
+  <aside class="panel">
+    <div class="kicker">Moose · Habitat Explorer</div>
+    <h1 class="title">Yukon North Slope</h1>
+    <div class="sub">Richardson Mountains · Western Arctic</div>
+
+    <p class="desc">Multi-criteria habitat suitability built from open
+    Earth Engine datasets — ESA WorldCover, MODIS NDVI, MODIS Snow,
+    SRTM terrain. Toggle seasons to see how predicted moose habitat
+    shifts across the annual cycle.</p>
+
+    <div class="section">
+      <div class="section-h">Layers</div>
+      <div id="layer-rows"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-h">Suitability</div>
+      <div class="legend-strip"></div>
+      <div class="legend-row"><span>Low</span><span>High</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-h">Data sources</div>
+      <div class="src">ESA WorldCover v200 (2021) · 10 m</div>
+      <div class="src">MODIS MOD13Q1 NDVI · 250 m</div>
+      <div class="src">MODIS MOD10A1 Snow · 500 m</div>
+      <div class="src">USGS SRTM · 30 m</div>
+      <div class="src">MODIS MCD64A1 Fire · 500 m</div>
+      <div class="src">YT/NT collar telemetry · Vertex Plus 4D</div>
+    </div>
+
+    <div class="section">
+      <div class="section-h">Inspect</div>
+      <div class="inspect" id="inspect"><span class="lbl">Click the map to sample pixel values.</span></div>
+    </div>
+
+    <div class="foot">
+      Logan McLeod · <a href="mailto:loganmcleod@uvic.ca" style="color:var(--ink)">loganmcleod@uvic.ca</a><br/>
+      Arctic Landscape Ecology Lab · University of Victoria<br/>
+      <span class="gee">⚙ Built with Google Earth Engine</span>
+    </div>
+  </aside>
+
+  <!-- RIGHT MAP ------------------------------------------------ -->
+  <main style="position:relative">
+    <div class="map-titlebar">
+      <span class="dot"></span>
+      <span><b>Habitat Suitability v1.2</b></span>
+      <span style="color:var(--faint)">·</span>
+      <span>3,282 km²</span>
+      <span style="color:var(--faint)">·</span>
+      <span>69.0°N 137.5°W</span>
+    </div>
+    <div class="map-watermark">⚙ Google Earth Engine</div>
+    <div id="map"></div>
+    <div class="loading" id="loading">Loading suitability rasters…</div>
+  </main>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// ============================================================================
+// MOOSE HABITAT SUITABILITY VIEWER
+// ----------------------------------------------------------------------------
+// Local mock that mirrors the published Earth Engine app
+// (earthengine/moose-habitat-app.js). Procedural rasters stand in for the
+// real Earth Engine layers so the viewer remains useful while the GEE app
+// is being published. Same UI, same color palette, same layer set.
+// ============================================================================
+
+// --- CONFIG -----------------------------------------------------------------
+
+const CENTER  = [68.7, -137.0];   // Yukon North Slope
+const ZOOM    = 7;
+const BOUNDS  = [[67.5, -141.0], [70.5, -132.0]];
+
+const PALETTE_SUIT = ['#f7f1e6','#e6dcc6','#c9a47a','#b77735','#7e4a1d','#3d2410'];
+const PALETTE_NDVI = ['#f7f1e6','#cfd9b3','#7a9a3a','#2f7d4f','#143d24'];
+const PALETTE_SNOW = ['#f7f1e6','#cfd6df','#7896b8','#2c4f78'];
+
+const LAYERS = [
+  { key:'summer',  label:'Summer suitability',  on:true,  opacity:0.85,
+    palette:PALETTE_SUIT, kind:'suit', seed:1 },
+  { key:'winter',  label:'Winter suitability',  on:false, opacity:0.85,
+    palette:PALETTE_SUIT, kind:'suit', seed:2 },
+  { key:'calving', label:'Calving suitability', on:false, opacity:0.85,
+    palette:PALETTE_SUIT, kind:'suit', seed:3 },
+  { key:'rut',     label:'Rut suitability',     on:false, opacity:0.85,
+    palette:PALETTE_SUIT, kind:'suit', seed:4 },
+  { key:'ndvi',    label:'NDVI (summer mean)',  on:false, opacity:0.7,
+    palette:PALETTE_NDVI, kind:'ndvi', seed:5 },
+  { key:'snow',    label:'Snow cover (winter)', on:false, opacity:0.7,
+    palette:PALETTE_SNOW, kind:'snow', seed:6 },
+  { key:'shrub',   label:'Shrubland (WorldCover)', on:false, opacity:0.55,
+    palette:['#b77735'], kind:'mask', seed:7 }
+];
+
+const TOWNS = [
+  { name:'Inuvik',     ll:[68.349, -133.717] },
+  { name:'Aklavik',    ll:[68.221, -135.010] },
+  { name:'Tuktoyaktuk',ll:[69.443, -133.034] },
+  { name:'Shingle Pt.',ll:[68.948, -137.220] },
+  { name:'Old Crow',   ll:[67.567, -139.839] }
+];
+
+// Mock collar tracks — 3 individuals
+const COLLAR_TRACKS = [
+  { id:'YT-MO-01', color:'#1a1a1a',
+    pts: makeTrack(68.55, -136.30, 0.9, 40, 11) },
+  { id:'YT-MO-02', color:'#7e4a1d',
+    pts: makeTrack(69.15, -134.80, 0.7, 36, 22) },
+  { id:'NT-MO-03', color:'#2f7d4f',
+    pts: makeTrack(68.30, -135.50, 0.8, 44, 33) }
+];
+
+function makeTrack(lat0, lon0, span, n, seed) {
+  const rng = mulberry32(seed * 9973);
+  let lat = lat0, lon = lon0;
+  const pts = [[lat, lon]];
+  for (let i = 0; i < n; i++) {
+    const a = rng() * Math.PI * 2;
+    const r = (rng() * 0.4 + 0.15) * span * 0.1;
+    lat += Math.sin(a) * r;
+    lon += Math.cos(a) * r * 1.8;
+    pts.push([lat, lon]);
+  }
+  return pts;
+}
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+// --- MAP --------------------------------------------------------------------
+
+const map = L.map('map', {
+  center: CENTER, zoom: ZOOM, minZoom: 5, maxZoom: 11,
+  maxBounds: BOUNDS, maxBoundsViscosity: 0.6,
+  zoomControl: true, attributionControl: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OSM · © CARTO  ·  Earth Engine datasets © respective providers',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+// Town markers
+TOWNS.forEach(t => {
+  const icon = L.divIcon({
+    className: 'town-pin',
+    html: `<div style="display:flex;align-items:center;gap:5px">
+      <div style="width:5px;height:5px;background:#1a1a1a;border:1px solid #f7f1e6"></div>
+      <span>${t.name}</span></div>`,
+    iconSize: [80, 14], iconAnchor: [3, 7]
+  });
+  L.marker(t.ll, { icon, className:'town-label' }).addTo(map);
+});
+
+// Collar tracks
+COLLAR_TRACKS.forEach(t => {
+  L.polyline(t.pts, { color: t.color, weight: 1.2, opacity: 0.85,
+                       dashArray:'2,3' }).addTo(map)
+   .bindTooltip(`Collar ${t.id}`, { className:'town-label', sticky:true });
+  // start dot
+  L.circleMarker(t.pts[0], { radius: 3, color: t.color, fillColor: t.color,
+    fillOpacity: 1, weight: 1 }).addTo(map);
+});
+
+// --- PROCEDURAL RASTER LAYERS -----------------------------------------------
+// Each layer renders a canvas image overlay over BOUNDS. We use value noise
+// at multiple scales + lat/lon-dependent terms so each layer has a plausible
+// distinct spatial pattern.
+
+function valueNoise(seed) {
+  const rng = mulberry32(seed);
+  const grid = [];
+  const N = 18;  // 18×24 noise grid
+  const M = 24;
+  for (let j = 0; j < N; j++) {
+    const row = [];
+    for (let i = 0; i < M; i++) row.push(rng());
+    grid.push(row);
+  }
+  return (u, v) => {
+    // Wrap into [0,1) so multi-scale calls (u*2.4, etc.) tile cleanly
+    // and never index out of the noise grid.
+    u = u - Math.floor(u);
+    v = v - Math.floor(v);
+    // u,v in [0,1]
+    const x = u * (M - 1), y = v * (N - 1);
+    const x0 = Math.floor(x), y0 = Math.floor(y);
+    const x1 = Math.min(x0 + 1, M - 1), y1 = Math.min(y0 + 1, N - 1);
+    const fx = x - x0, fy = y - y0;
+    const sx = fx*fx*(3-2*fx), sy = fy*fy*(3-2*fy);
+    const a = grid[y0][x0], b = grid[y0][x1];
+    const c = grid[y1][x0], d = grid[y1][x1];
+    return (a*(1-sx) + b*sx)*(1-sy) + (c*(1-sx) + d*sx)*sy;
+  };
+}
+
+function renderLayer(L) {
+  const W = 640, H = 480;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+
+  const n1 = valueNoise(L.seed * 13);
+  const n2 = valueNoise(L.seed * 71);
+  const n3 = valueNoise(L.seed * 113);
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const u = x / (W - 1), v = y / (H - 1);
+      // Latitude proxy (north = higher v in pixel space, but BOUNDS are
+      // top=70.5N bottom=67.5N — top edge is north, so v=0 is north).
+      const latProxy = 1 - v;  // 0 = south, 1 = north
+      // Multi-scale noise
+      let n = n1(u*1.0, v*1.0) * 0.55
+            + n2(u*2.4, v*2.4) * 0.28
+            + n3(u*5.0, v*5.0) * 0.17;
+      // Coastal effect — distance from north edge (Beaufort coast)
+      const coast = Math.max(0, 1 - latProxy * 1.4);
+
+      let val;
+      if (L.kind === 'suit') {
+        // Different season weightings
+        if (L.key === 'summer') {
+          // High suitability in mid-lat shrubby zones, riparian patches
+          val = n * 0.7 + (1 - Math.abs(latProxy - 0.45)) * 0.4 - coast * 0.25;
+        } else if (L.key === 'winter') {
+          // Low elevation, sheltered south-facing — high in valleys
+          val = (1 - n) * 0.4 + (1 - latProxy) * 0.5 + n2(u*3, v*3) * 0.25 - 0.1;
+        } else if (L.key === 'calving') {
+          // Mid-elevation, rugged — patchy
+          val = Math.pow(n, 1.6) * 1.4 + (1 - Math.abs(latProxy - 0.55)) * 0.25;
+        } else { // rut
+          val = n * 0.6 + (1 - Math.abs(latProxy - 0.40)) * 0.45;
+        }
+      } else if (L.kind === 'ndvi') {
+        val = n * 0.7 + latProxy * 0.4 - coast * 0.3;
+      } else if (L.kind === 'snow') {
+        val = (1 - latProxy) * 0.3 + n * 0.4 + (1 - n2(u*3, v*3)) * 0.4;
+      } else if (L.kind === 'mask') {
+        // Binary-ish shrubland mask
+        val = (n > 0.52 && n3(u*4, v*4) > 0.45) ? 0.9 : 0;
+      }
+      val = Math.max(0, Math.min(1, val));
+
+      const c = colorRamp(L.palette, val);
+      const k = (y * W + x) * 4;
+      d[k]   = c[0];
+      d[k+1] = c[1];
+      d[k+2] = c[2];
+      d[k+3] = (L.kind === 'mask' && val < 0.1) ? 0 : 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+function colorRamp(palette, t) {
+  const N = palette.length;
+  if (N === 1) return hexToRgb(palette[0]);
+  const x = t * (N - 1);
+  const i0 = Math.floor(x), i1 = Math.min(i0 + 1, N - 1);
+  const f = x - i0;
+  const a = hexToRgb(palette[i0]), b = hexToRgb(palette[i1]);
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+function hexToRgb(h) {
+  const n = parseInt(h.slice(1), 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+
+// --- LAYER MANAGEMENT --------------------------------------------------------
+
+const overlays = {};
+
+function ensureLayer(L) {
+  if (overlays[L.key]) return;
+  const url = renderLayer(L);
+  overlays[L.key] = L.imageOverlay = L.imageOverlay = window.L
+    ? window.L.imageOverlay(url, BOUNDS, { opacity: L.opacity })
+    : null;
+  // ^ name clash with leaflet's L; use window.L
+}
+
+// Re-do without the name clash
+delete overlays.summer;
+const _L = window.L;
+const layerObjs = {};
+
+function buildLayer(layer) {
+  const url = renderLayer(layer);
+  return _L.imageOverlay(url, BOUNDS, { opacity: layer.opacity,
+                                          interactive: false,
+                                          className: 'suit-overlay' });
+}
+
+function applyLayer(layer) {
+  if (layerObjs[layer.key]) {
+    map.removeLayer(layerObjs[layer.key]);
+    delete layerObjs[layer.key];
+  }
+  if (!layer.on) return;
+  const lo = buildLayer(layer);
+  layerObjs[layer.key] = lo;
+  lo.addTo(map);
+  // Re-order: bring tracks/towns to front
+  // (Leaflet handles overlay ordering via pane; default OK.)
+}
+
+function setOpacity(layer, v) {
+  layer.opacity = v;
+  if (layerObjs[layer.key]) layerObjs[layer.key].setOpacity(v);
+}
+
+// --- PANEL UI ---------------------------------------------------------------
+
+const rows = document.getElementById('layer-rows');
+LAYERS.forEach(L => {
+  const row = document.createElement('div');
+  row.className = 'lr' + (L.on ? '' : ' muted');
+  row.innerHTML = `
+    <input type="checkbox" id="cb-${L.key}" ${L.on?'checked':''}/>
+    <label for="cb-${L.key}">${L.label}</label>
+    <input type="range" min="0" max="1" step="0.05" value="${L.opacity}"/>`;
+  rows.appendChild(row);
+
+  const cb = row.querySelector('input[type=checkbox]');
+  cb.addEventListener('change', () => {
+    L.on = cb.checked;
+    row.classList.toggle('muted', !L.on);
+    applyLayer(L);
+  });
+  const sl = row.querySelector('input[type=range]');
+  sl.addEventListener('input', () => setOpacity(L, parseFloat(sl.value)));
+});
+
+// --- INIT --------------------------------------------------------------------
+
+// Pre-render all layers (small, fast)
+setTimeout(() => {
+  LAYERS.forEach(applyLayer);
+  document.getElementById('loading').style.display = 'none';
+}, 60);
+
+// --- INSPECT ON CLICK -------------------------------------------------------
+
+const inspectEl = document.getElementById('inspect');
+map.on('click', (e) => {
+  // Sample each suitability raster procedurally at the click location.
+  const lat = e.latlng.lat, lon = e.latlng.lng;
+  // Map lat/lon to u,v in BOUNDS (matches renderLayer's domain)
+  const u = (lon - BOUNDS[0][1]) / (BOUNDS[1][1] - BOUNDS[0][1]);
+  const v = 1 - (lat - BOUNDS[0][0]) / (BOUNDS[1][0] - BOUNDS[0][0]);
+  if (u < 0 || u > 1 || v < 0 || v > 1) {
+    inspectEl.innerHTML = `<span class="lbl">Outside study area.</span>`;
+    return;
+  }
+
+  const vals = {};
+  LAYERS.forEach(L => {
+    const n1 = valueNoise(L.seed * 13);
+    const n2 = valueNoise(L.seed * 71);
+    const n3 = valueNoise(L.seed * 113);
+    let n = n1(u, v) * 0.55 + n2(u*2.4, v*2.4) * 0.28 + n3(u*5, v*5) * 0.17;
+    const latProxy = 1 - v;
+    const coast = Math.max(0, 1 - latProxy * 1.4);
+    let val = n;
+    if (L.key === 'summer') val = n*0.7 + (1-Math.abs(latProxy-0.45))*0.4 - coast*0.25;
+    else if (L.key === 'winter') val = (1-n)*0.4 + (1-latProxy)*0.5 + n2(u*3,v*3)*0.25 - 0.1;
+    else if (L.key === 'calving') val = Math.pow(n,1.6)*1.4 + (1-Math.abs(latProxy-0.55))*0.25;
+    else if (L.key === 'rut') val = n*0.6 + (1-Math.abs(latProxy-0.40))*0.45;
+    else if (L.key === 'ndvi') val = n*0.7 + latProxy*0.4 - coast*0.3;
+    else if (L.key === 'snow') val = (1-latProxy)*0.3 + n*0.4 + (1-n2(u*3,v*3))*0.4;
+    vals[L.key] = Math.max(0, Math.min(1, val));
+  });
+
+  inspectEl.innerHTML =
+    `<span class="lbl">lat</span> ${lat.toFixed(3)}` +
+    `   <span class="lbl">lon</span> ${lon.toFixed(3)}\n` +
+    `<span class="lbl">summer  </span>${vals.summer.toFixed(2)}` +
+    `   <span class="lbl">winter  </span>${vals.winter.toFixed(2)}\n` +
+    `<span class="lbl">calving </span>${vals.calving.toFixed(2)}` +
+    `   <span class="lbl">rut     </span>${vals.rut.toFixed(2)}\n` +
+    `<span class="lbl">ndvi    </span>${vals.ndvi.toFixed(2)}` +
+    `   <span class="lbl">snow    </span>${Math.round(vals.snow*100)}`;
+});
+
+</script>
+</body>
+</html>

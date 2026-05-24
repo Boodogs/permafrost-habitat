@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Yukon Alpine Birds — Earth Engine Comparison</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#1a1a1a; --sub:#555; --faint:#999;
+  --bg:#f7f1e6; --paper:#fff; --hatch:#e6dcc6;
+  --accent:#b77735; --phd:#2f7d4f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif;font-size:14px}
+.app{display:grid;grid-template-rows:1fr 42px;height:100vh}
+.maps{display:grid;grid-template-columns:1fr 1fr;height:100%;
+  border-bottom:1px solid var(--ink)}
+.side{position:relative;overflow:hidden}
+.side + .side{border-left:1px solid var(--ink)}
+.map{height:100%;width:100%;background:#ece4cf}
+
+/* Leaflet base */
+.leaflet-container{background:#ece4cf;font-family:"Source Serif 4",serif}
+.leaflet-tile-pane{filter:sepia(.22) saturate(.85) contrast(.95) brightness(1.02)}
+.leaflet-control-attribution{font-family:"JetBrains Mono",monospace;
+  font-size:9px!important;background:rgba(247,241,230,.85)!important}
+.leaflet-bar a{background:#f7f1e6!important;color:#1a1a1a!important;
+  border-color:rgba(26,26,26,.4)!important}
+
+/* Side label (top-left) */
+.side-tag{position:absolute;top:12px;left:12px;z-index:1000;
+  background:rgba(247,241,230,.95);border:1px solid var(--ink);
+  padding:5px 10px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  font-weight:600}
+.side-tag b{color:var(--ink)}
+
+/* Floating control card (top-right per side) */
+.card{position:absolute;top:12px;right:12px;z-index:1000;
+  width:240px;background:var(--paper);border:1px solid var(--ink);
+  padding:13px 14px}
+.card .lbl{font-family:"JetBrains Mono",monospace;font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--sub);
+  font-weight:600;margin-bottom:4px}
+.card select{width:100%;padding:6px 8px;font-family:"Source Serif 4",serif;
+  font-size:13px;border:1px solid var(--ink);background:var(--bg);
+  color:var(--ink);cursor:pointer}
+.card select:focus{outline:1px solid var(--accent);outline-offset:1px}
+.spname{font-family:"Fraunces",serif;font-weight:500;font-size:18px;
+  line-height:1.15;margin:8px 0 0;color:var(--ink)}
+.spsci{font-family:"Source Serif 4",serif;font-style:italic;font-size:11.5px;
+  color:var(--sub);margin:1px 0 7px}
+.spblurb{font-size:11.5px;line-height:1.45;color:var(--ink);
+  margin:0 0 10px;text-wrap:pretty}
+.toggles{display:flex;flex-direction:column;gap:4px;padding-top:8px;
+  border-top:1px solid var(--hatch)}
+.toggles label{display:flex;align-items:center;gap:7px;cursor:pointer;
+  font-size:11.5px}
+.toggles input{accent-color:var(--accent);width:13px;height:13px;
+  cursor:pointer;margin:0}
+.toggles .opacity{display:flex;align-items:center;gap:6px;margin-top:2px}
+.toggles input[type=range]{accent-color:var(--accent);flex:1}
+.toggles .ov{font-family:"JetBrains Mono",monospace;font-size:9.5px;
+  color:var(--sub);min-width:24px;text-align:right}
+
+/* Inspect (bottom-right per side) */
+.inspect{position:absolute;bottom:12px;right:12px;z-index:1000;
+  width:240px;background:var(--paper);border:1px solid var(--ink);
+  padding:9px 12px;font-family:"JetBrains Mono",monospace;font-size:10.5px;
+  line-height:1.55;color:var(--ink);white-space:pre-wrap;
+  min-height:46px}
+.inspect .ilb{color:var(--sub)}
+.inspect .ihint{color:var(--sub);font-style:italic;font-family:"Source Serif 4",serif;font-size:11.5px;text-transform:none;letter-spacing:0}
+
+/* Legend (bottom-left of left map only) */
+.legend{position:absolute;bottom:12px;left:12px;z-index:1000;
+  background:rgba(247,241,230,.95);border:1px solid var(--ink);
+  padding:8px 12px;font-family:"JetBrains Mono",monospace;font-size:9px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--sub)}
+.legend .strip{height:8px;width:140px;margin:4px 0 2px;
+  background:linear-gradient(90deg,#f7f1e6,#e6dcc6,#c9a47a,#b77735,#7e4a1d,#3d2410)}
+.legend .lr{display:flex;justify-content:space-between;font-size:8.5px}
+
+/* Footer */
+.foot{display:flex;align-items:center;gap:16px;padding:0 18px;
+  background:var(--paper);border-top:none;font-size:11px;color:var(--sub);
+  font-family:"JetBrains Mono",monospace;letter-spacing:.06em;
+  text-transform:uppercase}
+.foot .tit{font-family:"Fraunces",serif;text-transform:none;letter-spacing:0;
+  font-size:13px;font-weight:500;color:var(--ink)}
+.foot .gee{color:var(--accent);font-weight:bold;margin-left:auto}
+.foot .src{font-size:10px;color:var(--sub)}
+
+/* Center wipe — visual cue maps are linked */
+.wipe{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:3px;height:100%;background:var(--accent);z-index:500;
+  pointer-events:none;opacity:.85}
+.wipe::before,.wipe::after{content:"";position:absolute;left:50%;
+  transform:translateX(-50%);width:9px;height:9px;background:var(--accent);
+  border:1px solid var(--ink);border-radius:50%}
+.wipe::before{top:50%;margin-top:-4.5px}
+.wipe::after{bottom:50%;margin-bottom:-4.5px;background:var(--paper)}
+
+/* Hex bin styling */
+.hex-pop{font-family:"JetBrains Mono",monospace;font-size:10px;
+  background:var(--paper);border:1px solid var(--ink)}
+
+@media(max-width:780px){
+  .maps{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+  .side + .side{border-left:none;border-top:1px solid var(--ink)}
+  .wipe{display:none}
+  .card{width:200px;font-size:11px}
+  .inspect{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="maps">
+    <!-- LEFT -->
+    <section class="side">
+      <div class="side-tag">A · <b>Left</b></div>
+      <div id="map-a" class="map"></div>
+      <div class="card" id="card-a"></div>
+      <div class="legend" id="legend">
+        Suitability
+        <div class="strip"></div>
+        <div class="lr"><span>0 low</span><span>1 high</span></div>
+      </div>
+      <div class="inspect" id="inspect-a"><span class="ihint">Click the map to sample pixel values.</span></div>
+    </section>
+
+    <!-- WIPE -->
+    <div class="wipe" aria-hidden="true"></div>
+
+    <!-- RIGHT -->
+    <section class="side">
+      <div class="side-tag">B · <b>Right</b></div>
+      <div id="map-b" class="map"></div>
+      <div class="card" id="card-b"></div>
+      <div class="inspect" id="inspect-b"><span class="ihint">Click the map to sample pixel values.</span></div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="foot">
+    <span class="tit">Yukon Alpine Birds · Habitat Comparison</span>
+    <span class="src">Sentinel-2 SR · SRTM · WorldCover · MODIS Snow</span>
+    <span class="gee">⚙ Built with Google Earth Engine</span>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// ============================================================================
+//  Yukon Alpine Birds — Habitat Suitability Comparison (local mirror)
+//  Mirrors earthengine/alpine-birds-app.js — same species, same weights,
+//  same colour palette.  Procedural rasters stand in for the published GEE
+//  outputs so the viewer is useful while the EE app is being published.
+// ============================================================================
+
+const BOUNDS = [[59.0, -141.0], [63.0, -132.0]];
+const CENTER = [60.6, -136.5];
+const ZOOM_INIT = 7;
+
+const SUIT_RAMP = ['#f7f1e6','#e6dcc6','#c9a47a','#b77735','#7e4a1d','#3d2410'];
+const HEX_RAMP  = ['rgba(247,241,230,0.0)','#cfd9b3','#7a9a3a','#2f7d4f','#143d24'];
+
+// Same envelope weights as the GEE script -----------------------------------
+const SPECIES = {
+  BRSP: { name: "Brewer's Sparrow",     sci: "Spizella breweri",
+    blurb: "Dwarf shrub & dwarf-birch specialist. Northern range limit in southern Yukon — patchy on dry shrub slopes.",
+    w: { elev:-0.30, ndvi: 0.30, ndvi705: 1.10, ndwi:-0.35, slope:-0.40, shrub: 1.20, rugged:-0.20, snow:-0.50 }},
+  DUFL: { name: "Dusky Flycatcher",     sci: "Empidonax oberholseri",
+    blurb: "Subalpine open-forest and riparian shrub at treeline. Mid-elevation, moderate productivity.",
+    w: { elev:-0.20, ndvi: 0.80, ndvi705: 0.55, ndwi: 0.30, slope:-0.10, shrub: 0.45, rugged: 0.10, snow:-0.30 }},
+  GCSP: { name: "Golden-crowned Sparrow", sci: "Zonotrichia atricapilla",
+    blurb: "Alpine willow and dwarf-birch patches near snow. Mid-high elevation treeline ecotone.",
+    w: { elev: 0.55, ndvi: 0.50, ndvi705: 0.90, ndwi: 0.20, slope: 0.10, shrub: 0.85, rugged: 0.20, snow: 0.35 }},
+  HOLA: { name: "Horned Lark",          sci: "Eremophila alpestris",
+    blurb: "Open high alpine, fellfield, gravel barrens. Sparse vegetation, near persistent snow.",
+    w: { elev: 1.10, ndvi:-0.60, ndvi705:-0.45, ndwi:-0.40, slope:-0.20, shrub:-0.70, rugged: 0.10, snow: 0.55 }},
+  TOSO: { name: "Townsend's Solitaire", sci: "Myadestes townsendi",
+    blurb: "Rocky open coniferous, cliff bands, alpine clearings. Mid-elevation, rugged terrain.",
+    w: { elev: 0.10, ndvi: 0.10, ndvi705:-0.10, ndwi:-0.20, slope: 0.70, shrub:-0.20, rugged: 0.95, snow:-0.20 }}
+};
+const SP_CODES = Object.keys(SPECIES);
+
+// --- Noise + shared environmental stack ------------------------------------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function valueNoise(seed){
+  const rng=mulberry32(seed);
+  const N=22, M=30;
+  const g=[];
+  for (let j=0;j<N;j++){const r=[];for(let i=0;i<M;i++)r.push(rng());g.push(r)}
+  return (u,v)=>{
+    u=u-Math.floor(u); v=v-Math.floor(v);
+    const x=u*(M-1), y=v*(N-1);
+    const x0=Math.floor(x), y0=Math.floor(y);
+    const x1=Math.min(x0+1,M-1), y1=Math.min(y0+1,N-1);
+    const fx=x-x0, fy=y-y0;
+    const sx=fx*fx*(3-2*fx), sy=fy*fy*(3-2*fy);
+    const a=g[y0][x0], b=g[y0][x1], c=g[y1][x0], d=g[y1][x1];
+    return (a*(1-sx)+b*sx)*(1-sy)+(c*(1-sx)+d*sx)*sy;
+  };
+}
+
+// Pre-bake the environmental "stack" — one noise field per variable, shared
+// between species so the spatial story is consistent.
+const N_ELEV   = valueNoise(11);
+const N_VEG    = valueNoise(23);
+const N_RE     = valueNoise(37);
+const N_WET    = valueNoise(53);
+const N_SLOPE  = valueNoise(67);
+const N_RUGGED = valueNoise(79);
+const N_SHRUB  = valueNoise(89);
+const N_SNOW   = valueNoise(97);
+
+// Sample the stack at (u,v) ∈ [0,1] — returns standardised features in ~[0,1].
+function stackAt(u, v) {
+  // Latitude-biased terrain: alpine bands more likely in mid-lat strip.
+  const latProxy = 1 - v;
+  // Multi-scale elevation
+  const e1 = N_ELEV(u, v) * 0.55 + N_ELEV(u*2.3, v*2.3) * 0.30 + N_ELEV(u*5, v*5) * 0.15;
+  const elev = clamp01(e1 * 0.85 + (1 - Math.abs(latProxy - 0.55)) * 0.30);
+  const ndvi = clamp01(N_VEG(u, v) * 0.5 + N_VEG(u*3, v*3) * 0.35 + (1 - elev) * 0.20);
+  const ndvi705 = clamp01(N_RE(u*1.5, v*1.5) * 0.6 + ndvi * 0.25);
+  const ndwi  = clamp01(N_WET(u*2, v*2) * 0.7 + (1 - ndvi) * 0.15);
+  const slope = clamp01(N_SLOPE(u*1.8, v*1.8) * 0.6 + elev * 0.4);
+  const rugged = clamp01(N_RUGGED(u*2.5, v*2.5) * 0.7 + slope * 0.25);
+  const shrub = (N_SHRUB(u*1.8, v*1.8) > 0.52 && ndvi705 > 0.45) ? 1 : 0;
+  const snow  = clamp01((N_SNOW(u*1.2, v*1.2) * 0.4) + elev * 0.55);
+  return { elev, ndvi, ndvi705, ndwi, slope, rugged, shrub, snow };
+}
+
+function clamp01(x){return Math.max(0, Math.min(1, x))}
+
+// Logistic envelope — same maths as the GEE script.
+function suitabilityAt(code, env) {
+  const w = SPECIES[code].w;
+  // Centre each feature on 0 (subtract 0.5) so positive weight × high value = positive contribution.
+  const f = {
+    elev: env.elev - 0.4,
+    ndvi: env.ndvi - 0.4,
+    ndvi705: env.ndvi705 - 0.4,
+    ndwi: env.ndwi - 0.35,
+    slope: env.slope - 0.4,
+    rugged: env.rugged - 0.4,
+    shrub: env.shrub - 0.3,
+    snow: env.snow - 0.4
+  };
+  const z = w.elev*f.elev + w.ndvi*f.ndvi + w.ndvi705*f.ndvi705
+          + w.ndwi*f.ndwi + w.slope*f.slope + w.rugged*f.rugged
+          + w.shrub*f.shrub + w.snow*f.snow;
+  return 1 / (1 + Math.exp(-z * 2.5));
+}
+
+// --- Render a species suitability raster as a canvas image overlay ---------
+const W = 720, H = 480;
+
+function renderSpecies(code) {
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const u = x / (W - 1), v = y / (H - 1);
+      const env = stackAt(u, v);
+      const s = suitabilityAt(code, env);
+      const c = colorRamp(SUIT_RAMP, s);
+      const k = (y * W + x) * 4;
+      d[k]=c[0]; d[k+1]=c[1]; d[k+2]=c[2]; d[k+3]=255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+function colorRamp(palette, t){
+  const N=palette.length;
+  if (N===1) return hexToRgb(palette[0]);
+  const x=t*(N-1), i0=Math.floor(x), i1=Math.min(i0+1,N-1), f=x-i0;
+  const a=hexToRgb(palette[i0]), b=hexToRgb(palette[i1]);
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+function hexToRgb(h){
+  if (!h || h[0]!=='#'){return [0,0,0]}
+  const n=parseInt(h.slice(1),16);
+  return [(n>>16)&255,(n>>8)&255,n&255];
+}
+
+// --- Hex bin point counts (real HEMP data) ---------------------------------
+// Loaded once from data/HEMP_hex5km_counts.geojson — fetched async.
+// Fallback to procedural hexes if the fetch fails (e.g. opening the widget
+// as a file:// URL with CORS restrictions).
+
+let REAL_HEX = null;   // GeoJSON FeatureCollection once loaded
+let HEX_LOAD_PROMISE = fetch('../data/HEMP_hex5km_counts.geojson')
+  .then(r => r.ok ? r.json() : null)
+  .then(j => { REAL_HEX = j; return j; })
+  .catch(() => null);
+
+function buildHexGrid(code) {
+  if (REAL_HEX) {
+    return REAL_HEX.features.map(f => {
+      // GeoJSON polygons are [lon, lat]; Leaflet wants [lat, lon]
+      const ring = f.geometry.coordinates[0];
+      const latlngs = ring.slice(0, -1).map(([lon, lat]) => [lat, lon]);
+      return {
+        latlngs,
+        count: f.properties[`${code}_n`] || 0,
+        nPoints: f.properties.n_points || 0
+      };
+    });
+  }
+  // --- Fallback: procedural hexes if data didn't load --------------------
+  const hexLat = 0.10, hexLon = 0.20;
+  const features = [];
+  const minLat = BOUNDS[0][0] - 0.1, maxLat = BOUNDS[1][0] + 0.1;
+  const minLon = BOUNDS[0][1] - 0.2, maxLon = BOUNDS[1][1] + 0.2;
+  let row = 0;
+  for (let lat = minLat; lat < maxLat; lat += hexLat * 0.75) {
+    const xOff = (row % 2 === 0) ? 0 : hexLon * 0.5;
+    for (let lon = minLon + xOff; lon < maxLon; lon += hexLon) {
+      const u = (lon - BOUNDS[0][1]) / (BOUNDS[1][1] - BOUNDS[0][1]);
+      const v = 1 - (lat - BOUNDS[0][0]) / (BOUNDS[1][0] - BOUNDS[0][0]);
+      if (u < 0 || u > 1 || v < 0 || v > 1) continue;
+      const env = stackAt(u, v);
+      const s = suitabilityAt(code, env);
+      const rngVal = ((Math.sin(lat * 1000 + lon * 137 + row) + 1) * 0.5);
+      const count = Math.max(0, Math.round(s * 26 * (0.45 + rngVal * 0.85) - 2));
+      if (count <= 0) continue;
+      // Build hex polygon
+      const latRad = lat * Math.PI / 180;
+      const dLat = 5 / 111;
+      const dLon = 5 / (111 * Math.cos(latRad));
+      const latlngs = [];
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i + Math.PI / 6;
+        latlngs.push([lat + dLat * Math.sin(a), lon + dLon * Math.cos(a)]);
+      }
+      features.push({ latlngs, count, nPoints: 1 });
+    }
+    row++;
+  }
+  return features;
+}
+
+function hexColor(count) {
+  // Square-root scaling — counts vary from 0 to ~200 across species,
+  // so sqrt compresses the long tail while keeping low counts visible.
+  const t = Math.min(1, Math.sqrt(count) / 14);
+  const c = colorRamp(HEX_RAMP, t);
+  return `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+}
+
+// --- TWO MAPS + SYNC -------------------------------------------------------
+
+const mapA = L.map('map-a', {
+  center: CENTER, zoom: ZOOM_INIT, minZoom: 5, maxZoom: 10,
+  maxBounds: BOUNDS, zoomControl: true
+});
+const mapB = L.map('map-b', {
+  center: CENTER, zoom: ZOOM_INIT, minZoom: 5, maxZoom: 10,
+  maxBounds: BOUNDS, zoomControl: false
+});
+
+[mapA, mapB].forEach(m => {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OSM · © CARTO  ·  Earth Engine datasets © respective providers',
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(m);
+});
+
+// Sync — broadcast moves, guarded against feedback loops
+let syncing = false;
+function linkPair(src, dst) {
+  src.on('move zoom', () => {
+    if (syncing) return;
+    syncing = true;
+    dst.setView(src.getCenter(), src.getZoom(), { animate: false });
+    syncing = false;
+  });
+}
+linkPair(mapA, mapB);
+linkPair(mapB, mapA);
+
+// --- Per-side state --------------------------------------------------------
+function makeSide(map, cardEl, inspectEl, defaultCode, otherSideRef) {
+  const state = {
+    code: defaultCode, opacity: 0.85, showHex: false,
+    raster: null, hexLayer: null, cache: {}
+  };
+
+  function ensureRaster() {
+    if (!state.cache[state.code]) state.cache[state.code] = renderSpecies(state.code);
+    return state.cache[state.code];
+  }
+
+  function refreshRaster() {
+    if (state.raster) { map.removeLayer(state.raster); state.raster = null; }
+    const url = ensureRaster();
+    state.raster = L.imageOverlay(url, BOUNDS, { opacity: state.opacity });
+    state.raster.addTo(map);
+  }
+
+  function refreshHex() {
+    if (state.hexLayer) { map.removeLayer(state.hexLayer); state.hexLayer = null; }
+    if (!state.showHex) return;
+    // Wait for the real GeoJSON to load on first use
+    HEX_LOAD_PROMISE.then(() => {
+      if (!state.showHex) return;  // user toggled off while loading
+      const group = L.layerGroup();
+      const hexes = buildHexGrid(state.code);
+      hexes.forEach(h => {
+        const poly = L.polygon(h.latlngs, {
+          color: '#1a1a1a', weight: 0.4,
+          opacity: h.count > 0 ? 0.6 : 0.25,
+          fillColor: hexColor(h.count),
+          fillOpacity: h.count > 0 ? 0.7 : 0.15
+        }).bindTooltip(
+          h.count > 0
+            ? `${state.code} n = ${h.count}   (${h.nPoints} survey pts)`
+            : `0 detections   (${h.nPoints} survey pt${h.nPoints>1?'s':''})`,
+          { className: 'hex-pop', sticky: true }
+        );
+        group.addLayer(poly);
+      });
+      group.addTo(map);
+      state.hexLayer = group;
+    });
+  }
+
+  // Render the card UI
+  const sp = SPECIES[state.code];
+  cardEl.innerHTML = `
+    <div class="lbl">Species</div>
+    <select></select>
+    <div class="spname"></div>
+    <div class="spsci"></div>
+    <div class="spblurb"></div>
+    <div class="toggles">
+      <label><input type="checkbox" class="hex"/> Show point-count hexes</label>
+      <div class="opacity">
+        <span class="lbl" style="margin:0">Opacity</span>
+        <input type="range" min="0" max="1" step="0.05" value="${state.opacity}"/>
+        <span class="ov">${Math.round(state.opacity*100)}</span>
+      </div>
+    </div>
+  `;
+  const sel = cardEl.querySelector('select');
+  SP_CODES.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = SPECIES[c].name;
+    if (c === state.code) o.selected = true;
+    sel.appendChild(o);
+  });
+  const nameEl  = cardEl.querySelector('.spname');
+  const sciEl   = cardEl.querySelector('.spsci');
+  const blurbEl = cardEl.querySelector('.spblurb');
+  const hexBox  = cardEl.querySelector('input.hex');
+  const opEl    = cardEl.querySelector('input[type=range]');
+  const ovEl    = cardEl.querySelector('.ov');
+
+  function paintCard() {
+    const s = SPECIES[state.code];
+    nameEl.textContent  = s.name;
+    sciEl.textContent   = s.sci;
+    blurbEl.textContent = s.blurb;
+  }
+
+  sel.addEventListener('change', () => {
+    state.code = sel.value;
+    paintCard();
+    refreshRaster();
+    refreshHex();
+  });
+  hexBox.addEventListener('change', () => {
+    state.showHex = hexBox.checked;
+    refreshHex();
+  });
+  opEl.addEventListener('input', () => {
+    state.opacity = parseFloat(opEl.value);
+    ovEl.textContent = Math.round(state.opacity * 100);
+    if (state.raster) state.raster.setOpacity(state.opacity);
+  });
+
+  // Click-to-inspect — also probes the *other* side's species at the same point
+  map.on('click', (e) => {
+    const lat = e.latlng.lat, lon = e.latlng.lng;
+    const u = (lon - BOUNDS[0][1]) / (BOUNDS[1][1] - BOUNDS[0][1]);
+    const v = 1 - (lat - BOUNDS[0][0]) / (BOUNDS[1][0] - BOUNDS[0][0]);
+    if (u<0||u>1||v<0||v>1) return;
+    const env = stackAt(u, v);
+    const sHere  = suitabilityAt(state.code, env);
+    const sOther = otherSideRef.state
+      ? suitabilityAt(otherSideRef.state.code, env)
+      : null;
+    inspectEl.innerHTML =
+      `<span class="ilb">lat</span> ${lat.toFixed(3)}` +
+      `   <span class="ilb">lon</span> ${lon.toFixed(3)}\n` +
+      `<span class="ilb">${state.code} suit</span> ${sHere.toFixed(2)}` +
+      (sOther !== null ? `   <span class="ilb">vs ${otherSideRef.state.code}</span> ${sOther.toFixed(2)}` : '') + '\n' +
+      `<span class="ilb">elev</span> ${env.elev.toFixed(2)}  ` +
+      `<span class="ilb">ndvi</span> ${env.ndvi.toFixed(2)}  ` +
+      `<span class="ilb">ndvi705</span> ${env.ndvi705.toFixed(2)}\n` +
+      `<span class="ilb">slope</span> ${env.slope.toFixed(2)}  ` +
+      `<span class="ilb">rugged</span> ${env.rugged.toFixed(2)}  ` +
+      `<span class="ilb">snow</span> ${env.snow.toFixed(2)}`;
+  });
+
+  paintCard();
+  refreshRaster();
+  return state;
+}
+
+// Initialise — pair the two sides so each can read the other's species
+const sideRefs = { a: { state: null }, b: { state: null } };
+sideRefs.a.state = makeSide(mapA,
+  document.getElementById('card-a'),
+  document.getElementById('inspect-a'),
+  'BRSP', sideRefs.b);
+sideRefs.b.state = makeSide(mapB,
+  document.getElementById('card-b'),
+  document.getElementById('inspect-b'),
+  'HOLA', sideRefs.a);
+
+// Invalidate sizes after layout settles (grid sometimes paints after Leaflet init)
+setTimeout(() => { mapA.invalidateSize(); mapB.invalidateSize(); }, 80);
+</script>
+</body>
+</html>
