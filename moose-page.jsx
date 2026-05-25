@@ -2,7 +2,7 @@
 // Built from the proposed-research one-pager (Nov 24, 2025).
 // Uses BvHeader / BvHeroPhoto from beaver-variants.jsx.
 
-const MS_TITLE = <>Habitat selection of Yukon&rsquo;s <em>Arctic moose</em></>;
+const MS_TITLE = <>Habitat selection of Yukon&rsquo;s <em style={{ color: 'var(--phd)' }}>Arctic moose</em></>;
 const MS_DECK = "Examining habitat selection of moose in northwestern Canada using satellite telemetry and remote-sensing for vegetation and snow.";
 
 const MS_CONTEXT_PARAS = [
@@ -15,7 +15,7 @@ const MS_OBJECTIVES = [
 { n: 1, label: "What are moose picking and avoiding through the year?",
   body: "Quantify seasonal habitat selection — winter, summer, calving, rut — using resource and step selection models." },
 { n: 2, label: "What's driving those choices in a changing Arctic?",
-  body: "Pin down how shrub cover, snow, and terrain shape selection as the landscape shifts under the moose." },
+  body: "Test the relationship between selection patterns and biophysical covariates such as shrub cover, snow, and terrain." },
 { n: 3, label: "Where are the important places, season by season?",
   body: "Turn the results into seasonal suitability maps and migration corridors that can feed land-use planning and co-management." }];
 
@@ -171,10 +171,7 @@ function MoosePage() {
           <span className="small-cap">Three questions</span>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginTop: 16 }}>
             {MS_OBJECTIVES.map((obj) =>
-            <div key={obj.n} style={{
-              borderTop: '1.5px solid var(--ink)',
-              paddingTop: 14
-            }}>
+            <div key={obj.n}>
                 <div className="mono" style={{ fontSize: 11, color: 'var(--sub)', letterSpacing: 1.4 }}>
                   0{obj.n}
                 </div>
