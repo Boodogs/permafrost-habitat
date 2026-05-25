@@ -1,7 +1,7 @@
 // Songbird chapter — "Listening to a changing tundra"
 // Production page (V1 layout). Uses BvHeader from beaver-variants.jsx.
 
-const SB_TITLE = <>Listening to a changing <em>tundra</em></>;
+const SB_TITLE = <>Listening to a changing <em style={{ color: 'var(--phd)' }}>tundra</em></>;
 const SB_DECK = "Permafrost disturbances, in the form of thaw slumps, drained lakes, and tundra fires, are reshaping bird habitat in the tundra of the Inuvialuit Settlement Region. Vegetation changes as permafrost degrades and the habitat available to birds shifts too. This can favour some species over others and change the relative abundance of species in the community. This chapter investigates bird community composition and abundance at tundra sites spanning a range of disturbance types and ages.";
 
 const SB_PARAS = [
