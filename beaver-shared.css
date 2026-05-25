@@ -826,6 +826,32 @@ a.pub-row-title:hover { border-bottom-color: var(--accent); color: var(--accent)
   }
 }
 
+/* Beaver-habitat-app — the 1fr/240px grid squeezes the main column
+   below ~960px (iPad portrait, small laptops), well before the
+   global 820px phone breakpoint. Stack early, and soften the
+   margin-note treatment when it falls into the prose flow so it
+   reads as a footnote, not as an interrupting pull-quote. */
+@media (max-width: 960px) {
+  .bha-grid { display: block !important; }
+  .bha-grid > .bv-margin {
+    margin-top: 14px !important;
+    margin-left: 0 !important;
+    padding-left: 12px;
+    font-size: 16px;
+    line-height: 1.35;
+    max-width: 56ch;
+    color: var(--sub);
+  }
+  /* keep the accent rule but make it a touch lighter as a footnote */
+  .bha-grid > .bv-margin::before { opacity: 0.7; }
+
+  /* Embed chrome — drop the right-side badge on narrow screens so the
+     URL has room to truncate without competing for width. */
+  .bha-embed-badge { display: none !important; }
+  .bha-embed-chrome { padding: 7px 10px !important; }
+  .bha-embed-url { font-size: 9.5px !important; }
+}
+
 @media (max-width: 480px) {
   .bv-title { font-size: 30px !important; }
   .bv-deck { font-size: 16px; }

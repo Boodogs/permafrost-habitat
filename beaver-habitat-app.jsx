@@ -27,13 +27,13 @@ function BHAEmbed({ url, height = 620, label = "Fig. 1" }) {
   const isLocal = !url || url.indexOf('users.earthengine.app') === -1;
   return (
     <div className="bv-embed-wrap">
-      <div style={{
+      <div className="bha-embed" style={{
         position: 'relative',
         border: '1.5px solid var(--ink)',
         background: 'var(--paper)'
       }}>
         {/* Window chrome */}
-        <div style={{
+        <div className="bha-embed-chrome" style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '8px 12px',
           borderBottom: '1px solid var(--ink)',
@@ -42,19 +42,20 @@ function BHAEmbed({ url, height = 620, label = "Fig. 1" }) {
           fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
           color: 'var(--sub)'
         }}>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div className="bha-embed-dots" style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#d8c39b', border: '1px solid var(--ink)' }}></span>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#b77735', border: '1px solid var(--ink)' }}></span>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#2f7d4f', border: '1px solid var(--ink)' }}></span>
           </div>
-          <span style={{ flex: 1, color: 'var(--ink)', fontWeight: 500 }}>
+          <span className="bha-embed-url" style={{ flex: 1, minWidth: 0, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {isLocal ?
             'widgets/beaver-habitat-viewer.html · (local preview)' :
             url.replace(/^https?:\/\//, '')}
           </span>
-          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>⚙ Earth Engine</span>
+          <span className="bha-embed-badge" style={{ color: 'var(--accent)', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap' }}>⚙ Earth Engine</span>
         </div>
         <iframe
+          className="bha-embed-frame"
           src={url || "widgets/beaver-habitat-viewer.html"}
           title="Beaver Habitat & Dam Persistence — Earth Engine"
           loading="lazy"
@@ -97,16 +98,6 @@ function BeaverHabitatAppV2({ geeUrl, embedHeight = 620 }) {
             </div>
             <h1 className="bv-title">{BHA_TITLE}</h1>
             <p className="bv-deck">{BHA_DECK}</p>
-            <div style={{
-              marginTop: 14,
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 11, color: 'var(--sub)', letterSpacing: '0.04em'
-            }}>
-              From the chapter:{' '}
-              <a href="beaver-expansion.html" style={{ color: 'var(--accent)' }}>
-                Beaver expansion onto the North Slope ↗
-              </a>
-            </div>
           </div>
           <div className="bv-margin" style={{ marginTop: 36 }}>
             Built in Google Earth Engine — the model rasters live as GEE
