@@ -85,7 +85,7 @@
   .nameplate .affil a { color: var(--sub); text-underline-offset: 2px; }
   .nameplate .affil a:hover { color: var(--accent); }
   .nameplate .lab-logo { display: block; margin-top: 10px; }
-  .nameplate .lab-logo img { height: 28px; width: auto; opacity: 0.7; transition: opacity 0.2s; }
+  .nameplate .lab-logo img { height: 42px; width: auto; opacity: 0.82; transition: opacity 0.2s; }
   .nameplate .lab-logo:hover img { opacity: 1; }
   .nameplate .menu { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--sub); margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; }
   .nameplate .menu a { color: var(--sub); text-decoration: none; }
@@ -99,6 +99,10 @@
     padding: 8px 12px;
     font-family: "JetBrains Mono", monospace;
     font-size: 10px;
+    /* Match the nameplate's height so the two corner panels read as a
+       deliberate pair (the larger lab logo set the nameplate to ~170px). */
+    box-sizing: border-box; min-height: 170px;
+    display: flex; flex-direction: column; justify-content: center;
   }
   .layers .row { display: flex; gap: 10px; align-items: center; padding: 3px 0; cursor: pointer; user-select: none; }
   .layers .swatch {
@@ -224,12 +228,14 @@
     .nameplate .sub { font-size: 12px; margin-top: 4px; }
     .nameplate .affil { font-size: 9.5px; }
     .nameplate .lab-logo { display: inline-block; margin-top: 8px; }
-    .nameplate .lab-logo img { height: 22px; }
+    .nameplate .lab-logo img { height: 32px; }
     .nameplate .menu { margin-top: 8px; gap: 12px; font-size: 10px; }
     /* Legend → horizontal strip between nameplate and map */
     .layers {
       position: static; order: 2;
       display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+      /* Reset the desktop pair-matching (column + 170px min-height) */
+      flex-direction: row; justify-content: flex-start; min-height: 0;
       padding: 8px 16px;
       border: none; border-bottom: 1.5px solid var(--ink);
       background: var(--bg);

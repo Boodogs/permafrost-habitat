@@ -9,7 +9,7 @@ const GW_FIG_DIR = 'images/moose-green-wave/';
 // Flush 1.5px ink frame on the plate, caption below — same treatment as the maps.
 function MsFig({ src, alt, fig, children, note, maxWidth = 640 }) {
   return (
-    <figure className="bv-embed-wrap" style={{ margin: '22px auto 0', maxWidth }}>
+    <figure className="bv-embed-wrap" style={{ margin: '24px auto 0', maxWidth }}>
       <img src={GW_FIG_DIR + src} alt={alt} loading="lazy"
         style={{ display: 'block', width: '100%', height: 'auto', border: '1.5px solid var(--ink)' }} />
       <figcaption className="bv-embed-cap">
@@ -28,7 +28,7 @@ function MooseGreenWave() {
       <h2 className="bv-section-h" style={{ fontSize: 34, marginTop: 10 }}>
         Resource tracking
       </h2>
-      <div className="bv-prose" style={{ maxWidth: '68ch' }}>
+      <div className="bv-prose" style={{ maxWidth: 820 }}>
         <p className="lead">
           We compare Richardson Mountains (migratory) and North Slope (resident) moose,
           Yukon–NWT, across two years, testing whether each population tracks moving resource
@@ -40,7 +40,7 @@ function MooseGreenWave() {
 
       {/* THE TWO POPULATIONS */}
       <h3 className="bv-subhead">The two populations</h3>
-      <div className="bv-prose" style={{ maxWidth: '68ch' }}>
+      <div className="bv-prose" style={{ maxWidth: 820 }}>
         <p>
           A typical Richardson Mountains moose migrates ~80–125 km between seasonal ranges;
           North Slope moose are typically residents. Whether an animal relocates shapes how
@@ -66,7 +66,7 @@ function MooseGreenWave() {
       <div className="bv-season-h" style={{ marginTop: 44 }}>
         <h2>Spring — the green wave</h2>
       </div>
-      <div className="bv-prose" style={{ maxWidth: '68ch', marginTop: 14 }}>
+      <div className="bv-prose" style={{ maxWidth: 820, marginTop: 14 }}>
         <p>
           During green-up, Richardson Mountains moose encounter a higher
           instantaneous green-up rate (IRG) at the locations they use than North
@@ -74,7 +74,7 @@ function MooseGreenWave() {
           derivative of the NDVI curve, indexing the leading edge of green-up.)
         </p>
       </div>
-      <MsFig src="spring-exposure-selection.png" fig="Fig. 2"
+      <MsFig src="spring-exposure-selection.png" fig="Fig. 2" maxWidth={760}
         alt="Two panels: per-animal mean IRG at used points, and step-scale IRG selection coefficient">
         <strong>Exposure differs; step-scale selection does not.</strong> Panel A — Richardson
         moose use locations with higher mean green-up rate. Panel B — the step-scale IRG
@@ -82,7 +82,7 @@ function MooseGreenWave() {
       </MsFig>
 
       <h3 className="bv-subhead">Selection is neutral at the step scale</h3>
-      <div className="bv-prose" style={{ maxWidth: '68ch' }}>
+      <div className="bv-prose" style={{ maxWidth: 820 }}>
         <p>
           At the movement-step scale, neither population selected for
           green-up rate — the IRG coefficient sits at or just below neutral for both. The
@@ -92,7 +92,7 @@ function MooseGreenWave() {
           drives movement in both populations is <strong>willow</strong>.
         </p>
       </div>
-      <MsFig src="spring-issf.png" fig="Fig. 3" maxWidth={600}
+      <MsFig src="spring-issf.png" fig="Fig. 3" maxWidth={660}
         alt="Integrated step-selection forest plot for spring, by forage type and population">
         <strong>Spring step-selection.</strong> Relative selection strength exp(β) by forage
         type. Willow and forb are selected by both populations; IRG (green-up) falls on the
@@ -100,7 +100,7 @@ function MooseGreenWave() {
       </MsFig>
 
       <h3 className="bv-subhead">Position on the green-up curve</h3>
-      <div className="bv-prose" style={{ maxWidth: '68ch' }}>
+      <div className="bv-prose" style={{ maxWidth: 820 }}>
         <p>
           Referenced to each location&rsquo;s own green-up curve, Richardson moose concentrate
           ahead of the peak, on the rising limb; North Slope moose sit further back. The
@@ -109,7 +109,7 @@ function MooseGreenWave() {
           with active selection.
         </p>
       </div>
-      <MsFig src="spring-surfing.png" fig="Fig. 4" maxWidth={540}
+      <MsFig src="spring-surfing.png" fig="Fig. 4" maxWidth={600}
         alt="Density of days from peak green-up at used locations, by population">
         <strong>Days from peak green-up.</strong> Zero marks the peak; negative is ahead of
         it. Richardson (teal) is shifted onto the rising limb relative to North Slope (salmon).
@@ -119,7 +119,7 @@ function MooseGreenWave() {
       <div className="bv-season-h" style={{ marginTop: 44 }}>
         <h2>Fall — the frost wave</h2>
       </div>
-      <div className="bv-prose" style={{ maxWidth: '68ch', marginTop: 14 }}>
+      <div className="bv-prose" style={{ maxWidth: 820, marginTop: 14 }}>
         <p>
           In autumn, senescence and advancing snow reshape forage distribution. We measured
           residual forage as NDVI level relative to end-of-season — a state (how much green
@@ -128,7 +128,7 @@ function MooseGreenWave() {
       </div>
 
       <h3 className="bv-subhead">Exposure is similar, but selection diverges</h3>
-      <div className="bv-prose" style={{ maxWidth: '68ch' }}>
+      <div className="bv-prose" style={{ maxWidth: 820 }}>
         <p>
           The spring pattern inverts. The two populations encounter similar mean residual
           forage (Panel A — the means nearly coincide), but at the step scale they select in
@@ -138,7 +138,7 @@ function MooseGreenWave() {
           relocate to track residual forage; the residents, confined to a fixed range, cannot.
         </p>
       </div>
-      <MsFig src="autumn-exposure-selection.png" fig="Fig. 5"
+      <MsFig src="autumn-exposure-selection.png" fig="Fig. 5" maxWidth={760}
         alt="Two panels: mean residual forage at used points, and residual-forage selection coefficient">
         <strong>Similar exposure, opposite choice.</strong> Panel A — population means nearly
         coincide. Panel B — Richardson selects residual forage (+); North Slope uses senescing
@@ -146,7 +146,7 @@ function MooseGreenWave() {
       </MsFig>
 
       <h3 className="bv-subhead">The full fall picture</h3>
-      <div className="bv-prose" style={{ maxWidth: '68ch' }}>
+      <div className="bv-prose" style={{ maxWidth: 820 }}>
         <p>
           Willow and forb dominate selection in both populations, as in spring. Residual
           forage is what separates them. Snow and frost effects are weak and stay provisional:
@@ -154,7 +154,7 @@ function MooseGreenWave() {
           product.
         </p>
       </div>
-      <MsFig src="autumn-issf.png" fig="Fig. 6" maxWidth={600}
+      <MsFig src="autumn-issf.png" fig="Fig. 6" maxWidth={660}
         alt="Integrated step-selection forest plot for autumn, by covariate and population">
         <strong>Autumn step-selection.</strong> Willow and forb are selected by both
         populations; residual forage is the covariate on which migrants and residents diverge.
@@ -190,7 +190,7 @@ function MooseGreenWave() {
           </tr>
         </tbody>
       </table>
-      <div className="bv-prose" style={{ maxWidth: '68ch', marginTop: 18 }}>
+      <div className="bv-prose" style={{ maxWidth: 820, marginTop: 18 }}>
         <p>
           In spring, migration coincides with phenology so that Richardson moose occupy a
           greener landscape without selecting for it at the step scale. In autumn, the

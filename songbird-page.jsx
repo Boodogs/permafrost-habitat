@@ -253,7 +253,7 @@ function SongbirdPage() {
         <div className="bv-prose" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
           <div>
             <span className="small-cap">In short</span>
-            <p className="lead">{SB_PARAS[0]}</p>
+            <p>{SB_PARAS[0]}</p>
           </div>
           <div>
             <span className="small-cap">What we're seeing</span>

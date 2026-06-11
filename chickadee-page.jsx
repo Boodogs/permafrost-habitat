@@ -259,7 +259,7 @@ function ChickadeePage() {
         <div className="bv-prose" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
           <div>
             <span className="small-cap">The search</span>
-            <p className="lead">{GH_PARAS[0]}</p>
+            <p>{GH_PARAS[0]}</p>
           </div>
           <div>
             <span className="small-cap">The result</span>

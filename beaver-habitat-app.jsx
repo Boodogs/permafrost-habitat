@@ -83,7 +83,7 @@ function BeaverHabitatAppV2({ geeUrl, embedHeight = 620 }) {
   return (
     <div className="bv">
       <BvHeader activeTab="research" />
-      <main style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 56px 80px' }}>
+      <main style={{ maxWidth: 1080, margin: '0 auto', padding: '40px 56px 80px' }}>
 
         {/* Header row — title + crumb on left, meta chips drift right */}
         <div className="bha-grid" style={{ display: 'grid', gridTemplateColumns: MAIN, gap: GAP, alignItems: 'start', marginTop: 12 }}>
