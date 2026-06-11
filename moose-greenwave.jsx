@@ -34,7 +34,7 @@ function MooseGreenWave() {
           Yukon–NWT, across two years, testing whether each population tracks moving resource
           waves: in spring, the <strong>green wave</strong> of emerging vegetation; in autumn,
           the <strong>frost wave</strong> governing residual forage. The patterns differ by
-          <em> migration strategy</em>.
+          migration strategy.
         </p>
       </div>
 
@@ -68,8 +68,8 @@ function MooseGreenWave() {
       </div>
       <div className="bv-prose" style={{ maxWidth: '68ch', marginTop: 14 }}>
         <p>
-          During green-up, Richardson Mountains moose encounter a <strong>higher
-          instantaneous green-up rate (IRG)</strong> at the locations they use than North
+          During green-up, Richardson Mountains moose encounter a higher
+          instantaneous green-up rate (IRG) at the locations they use than North
           Slope moose do. Per-animal means separate between the populations. (IRG is the first
           derivative of the NDVI curve, indexing the leading edge of green-up.)
         </p>
@@ -84,10 +84,10 @@ function MooseGreenWave() {
       <h3 className="bv-subhead">Selection is neutral at the step scale</h3>
       <div className="bv-prose" style={{ maxWidth: '68ch' }}>
         <p>
-          At the <strong>movement-step scale</strong>, neither population selected for
+          At the movement-step scale, neither population selected for
           green-up rate — the IRG coefficient sits at or just below neutral for both. The
           exposure gap in Panel A is therefore not produced by moose choosing higher-IRG
-          steps; it reflects the <em>geography of the route</em>, with Richardson moose moving
+          steps; it reflects the geography of the route, with Richardson moose moving
           through more productive, faster-greening terrain between ranges. The covariate that
           drives movement in both populations is <strong>willow</strong>.
         </p>
@@ -132,7 +132,7 @@ function MooseGreenWave() {
         <p>
           The spring pattern inverts. The two populations encounter similar mean residual
           forage (Panel A — the means nearly coincide), but at the step scale they select in
-          <strong> opposite directions</strong> (Panel B): Richardson moose select locations
+          <strong>opposite directions</strong> (Panel B): Richardson moose select locations
           retaining green forage (β = +0.10, <em>p</em> = 0.001); North Slope moose use more
           senescent areas than expected (β = −0.17, <em>p</em> = 0.005). The migrants can
           relocate to track residual forage; the residents, confined to a fixed range, cannot.
@@ -203,9 +203,10 @@ function MooseGreenWave() {
       <div className="ms-datanote" style={{ margin: '38px 0 0' }}>
         <span className="small-cap">Data &amp; acknowledgements</span>
         GPS collar data are from the <b>Yukon–NWT moose &amp; wolves study</b> (Government of
-        Yukon; PI Mike Suitor). With thanks to Environment Yukon, McGill University, WMAC-NS,
-        the Inuvialuit Game Council, the Gwich&rsquo;in Renewable Resources Board, Vuntut
-        Gwitchin First Nation, and the Aklavik Hunters &amp; Trappers Committee.
+        Yukon; PI Mike Suitor). This research is carried out in collaboration with, and with
+        gratitude for the knowledge and stewardship of, Environment Yukon, McGill University,
+        WMAC-NS, the Inuvialuit Game Council, the Gwich&rsquo;in Renewable Resources Board,
+        Vuntut Gwitchin First Nation, and the Aklavik Hunters &amp; Trappers Committee.
       </div>
     </section>);
 }
