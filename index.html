@@ -520,7 +520,14 @@ document.querySelectorAll('.layers .row[data-layer]').forEach(row => {
    float over the top of the map on desktop. */
 const phdBounds = L.latLngBounds(SITES.filter(s => s.kind === 'phd').map(s => [s.lat, s.lon]));
 if (window.matchMedia('(max-width: 820px)').matches) {
-  map.fitBounds(phdBounds, { padding: [30, 30], animate: false });
+  /* Mobile: frame the three PhD chapters PLUS the Grey-headed Chickadee
+     (the adjacent Old Crow project pin). Four spread-out NW-Yukon pins
+     read clearly without colliding, and including the chickadee signals
+     there's more to explore beyond the current chapters when you zoom. */
+  const mobileFocus = L.latLngBounds(
+    SITES.filter(s => s.kind === 'phd' || s.id === 'greyhead').map(s => [s.lat, s.lon])
+  );
+  map.fitBounds(mobileFocus, { padding: [34, 34], animate: false });
 } else {
   map.fitBounds(phdBounds, { paddingTopLeft: [60, 200], paddingBottomRight: [60, 60], animate: false });
 }

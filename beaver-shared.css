@@ -343,8 +343,34 @@
   .bv-season-h h2 { font-size: 24px; }
   .bv-season-h { flex-wrap: wrap; gap: 6px 12px; }
   .ms-compare { font-size: 14px; }
-  .ms-compare th, .ms-compare td { padding: 11px 12px; }
-  .ms-compare tbody th { width: auto; display: block; }
+  /* Stack the comparison table into per-row cards on mobile. Each row's
+     label sits on its own line, then the two seasons stack as full-width
+     values tagged with their column name (the thead is hidden). This
+     replaces the old th-only block hack that fractured each row into a
+     misaligned two-column fragment. */
+  .ms-compare, .ms-compare thead, .ms-compare tbody,
+  .ms-compare tr, .ms-compare th, .ms-compare td { display: block; width: auto; }
+  .ms-compare thead { display: none; }
+  .ms-compare tbody tr {
+    border-bottom: 1.5px solid var(--ink);
+    padding: 6px 0 12px;
+  }
+  .ms-compare tbody tr:last-child { border-bottom: none; }
+  .ms-compare tbody th {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink); padding: 10px 0 6px; border-bottom: none;
+  }
+  .ms-compare tbody td {
+    padding: 4px 0; border-bottom: none;
+  }
+  .ms-compare tbody td::before {
+    content: attr(data-col);
+    display: block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 1px;
+  }
 }
 
 /* DIVIDER ------------------------------------------------------- */

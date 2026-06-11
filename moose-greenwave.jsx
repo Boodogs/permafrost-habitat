@@ -175,18 +175,18 @@ function MooseGreenWave() {
         <tbody>
           <tr>
             <th>Exposure</th>
-            <td><strong className="green">Differs</strong> — Richardson higher</td>
-            <td><strong>Similar</strong> — both populations alike</td>
+            <td data-col="Spring · green wave"><strong className="green">Differs</strong> — Richardson higher</td>
+            <td data-col="Fall · frost wave"><strong>Similar</strong> — both populations alike</td>
           </tr>
           <tr>
             <th>Selection</th>
-            <td><strong>Neutral</strong> — no step-scale IRG selection</td>
-            <td><strong className="rust">Differs</strong> — migrants +, residents −</td>
+            <td data-col="Spring · green wave"><strong>Neutral</strong> — no step-scale IRG selection</td>
+            <td data-col="Fall · frost wave"><strong className="rust">Differs</strong> — migrants +, residents −</td>
           </tr>
           <tr className="meaning">
             <th>What it means</th>
-            <td>The difference is <em>availability</em></td>
-            <td>The difference is <em>behaviour</em></td>
+            <td data-col="Spring · green wave">The difference is <em>availability</em></td>
+            <td data-col="Fall · frost wave">The difference is <em>behaviour</em></td>
           </tr>
         </tbody>
       </table>
