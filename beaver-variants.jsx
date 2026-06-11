@@ -11,11 +11,8 @@ const BV_TLDR_PARAS = [
 
 
 function BvHeader({ activeTab = 'research' }) {
-  const tabs = [
-  ['Research', 'research', 'index.html'],
-  ['Publications', 'publications', 'publications.html'],
-  ['Field Notes', 'fieldnotes', 'field-notes.html']];
-
+  // Tabs come from site-nav.js (window.SITE_TABS) — single source of truth.
+  const tabs = window.SITE_TABS || [];
   return (
     <header className="bv-header">
       <div className="bv-wordmark">Logan McLeod<span className="dot"></span></div>
@@ -86,7 +83,6 @@ function BvEmbed({ caption = true }) {
       
       {caption &&
       <div className="bv-embed-cap">
-          <span className="label"></span>
           <span>Press <b>play</b> to watch dams spread; drag the year slider to jump to a specific point.</span>
           <span className="arrow">↳ pan & zoom the map; the side panel summarizes detected dams.</span>
         </div>

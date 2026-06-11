@@ -5,47 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Beaver Expansion — Calibrated Spread Forecast</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../tokens.css"/>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+  :root{ --simfail:#c9b48e; } /* local: simulated-failed dam fill */
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'JetBrains Mono',monospace;background:#efe7d6;color:#4a3a2a}
-  #map{width:100%;height:100vh}
-  .leaflet-container{background:#efe7d6!important}
-  .panel{position:fixed;top:16px;right:16px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:16px;width:280px;max-height:calc(100vh - 32px);overflow-y:auto;box-shadow:0 8px 24px rgba(86,62,34,.12)}
-  .panel h1{font-size:13px;color:#9f5b2d;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
-  .notes{margin-top:8px;font-size:9px;color:#6c5843;line-height:1.55}
-  .notes b{color:#7e5b37}
-  .notes .tag-main{font-size:12px;font-weight:700;color:#9f5b2d;letter-spacing:.5px}
-  .notes .tag-sub{font-size:11px;font-weight:600;color:#b07a4e;letter-spacing:.5px;margin-bottom:2px}
-  .notes .hiw{margin-top:8px}
-  .title-bar{position:fixed;top:16px;left:60px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:10px 16px;box-shadow:0 8px 24px rgba(86,62,34,.12)}
-  .title-bar h1{font-size:15px;color:#9f5b2d;letter-spacing:2px;text-transform:uppercase;margin:0}
-  .title-bar .sub{font-size:10px;color:#7f6a50}
-  .timeline{position:fixed;bottom:24px;left:60px;right:310px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:10px 16px;box-shadow:0 8px 24px rgba(86,62,34,.12)}
-  .tl-top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-  .play-btn{background:#b77735;border:none;color:#fff;padding:7px 16px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;min-width:90px}
-  .play-btn:hover{background:#9f5b2d}
-  .tl-h{display:flex;justify-content:space-between;align-items:center;flex:1;font-size:10px;color:#7f6a50}
-  .tl-h .cur{color:#9f5b2d;font-weight:700}
-  .timeline input[type=range]{width:100%;accent-color:#b77735}
-  .legend{position:fixed;top:88px;left:60px;z-index:1000;background:#f7f1e6ee;border:1px solid #c7ad87;border-radius:12px;padding:8px 12px;display:flex;gap:14px;font-size:10px;box-shadow:0 8px 24px rgba(86,62,34,.12);flex-wrap:wrap;max-width:560px}
-  .ldot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
-  .ldot.hollow{background:transparent;border:2px solid #8a7b63}
-  .ring{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;background:#d79b49;border:2px solid #5e3a1e}
-  .lbound{display:inline-block;width:12px;height:9px;margin-right:4px;vertical-align:middle;background:transparent;border:2px dashed #8a7b63;border-radius:2px}
-  .stats-row{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
-  .st{text-align:center;min-width:50px}.st-v{font-size:16px;font-weight:700;color:#7e5b37}.st-l{font-size:8px;color:#7f6a50;letter-spacing:1.5px}
-  .ui-toggle{position:fixed;top:16px;right:16px;z-index:1200;background:#b77735;border:none;color:#fff;padding:9px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;box-shadow:0 8px 24px rgba(86,62,34,.18)}
-  .ui-toggle:hover{background:#9f5b2d}
-  body.ui-hidden .ui-chrome{display:none!important}
-  .load-overlay{position:fixed;inset:0;z-index:2000;background:#efe7d6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-  .load-overlay h2{color:#9f5b2d;font-size:16px}
-  .load-overlay p{color:#7f6a50;font-size:11px;max-width:400px;text-align:center;line-height:1.6}
+  body{font-family:"Source Serif 4",Georgia,serif;background:var(--bg);color:var(--ink);font-size:14px}
+  #map{width:100%;height:100vh;background:var(--bg)}
+  .leaflet-container{background:#ece4cf!important;font-family:"Source Serif 4",serif}
+  .leaflet-tile-pane{filter:sepia(.22) saturate(.85) contrast(.95) brightness(1.02)}
+  .leaflet-control-attribution{font-family:"JetBrains Mono",monospace;font-size:9px!important;background:rgba(247,241,230,.85)!important}
+  .leaflet-bar{border-radius:0!important;box-shadow:none!important;border:1px solid var(--ink)!important}
+  .leaflet-bar a{background:#f7f1e6!important;color:#1a1a1a!important;border-color:rgba(26,26,26,.4)!important;border-radius:0!important}
+  .leaflet-popup-content-wrapper{background:rgba(247,241,230,.97);border:1px solid var(--ink);border-radius:0;box-shadow:3px 3px 0 rgba(26,26,26,.15);color:var(--ink)}
+  .leaflet-popup-content{margin:10px 12px}
+  .leaflet-popup-tip{background:#f7f1e6;box-shadow:none;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+
+  /* Overlay chrome — paper cards, square corners, 1px ink line */
+  .ui-chrome{background:rgba(247,241,230,.95);border:1px solid var(--ink)}
+
+  .title-bar{position:fixed;top:14px;left:14px;z-index:1000;padding:8px 14px;display:flex;align-items:center;gap:10px;
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+  .title-bar .dot{width:6px;height:6px;background:var(--accent);border-radius:50%;flex:none}
+  .title-bar h1{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--ink)}
+  .title-bar h1 span{font-weight:400;color:var(--sub)}
+
+  .legend{position:fixed;top:52px;left:14px;z-index:1000;padding:8px 12px;display:flex;gap:6px 14px;flex-wrap:wrap;max-width:560px;
+    font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--sub)}
+  .legend > span{display:inline-flex;align-items:center}
+  .ldot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;border:1px solid rgba(26,26,26,.35)}
+  .ring{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:transparent;border:2px solid var(--ink)}
+  .lbound{display:inline-block;width:12px;height:9px;margin-right:5px;background:transparent;border:1.5px dashed rgba(26,26,26,.55)}
+
+  .ui-toggle{position:fixed;top:14px;right:14px;z-index:1200;background:rgba(247,241,230,.95);border:1px solid var(--ink);color:var(--ink);
+    padding:8px 12px;cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+  .ui-toggle:hover{background:var(--ink);color:var(--bg)}
+
+  .panel{position:fixed;top:50px;right:14px;z-index:1000;width:272px;padding:14px 16px;
+    max-height:calc(100vh - 86px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+  .panel h1{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--sub);border-bottom:1px solid var(--hatch);padding-bottom:5px;margin-bottom:10px}
+  .stats-row{display:flex;flex-wrap:wrap;gap:10px 13px;margin-bottom:12px}
+  .st{min-width:0}
+  .st-v{font-family:"Source Serif 4",Georgia,serif;font-size:20px;font-weight:500;line-height:1;color:var(--ink)}
+  .st-l{font-family:"JetBrains Mono",monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);margin-top:3px}
+  .notes{border-top:1px solid var(--hatch);padding-top:10px;line-height:1.55}
+  .notes .tag-main{font-family:"Fraunces","Source Serif 4",serif;font-size:15px;font-weight:500;color:var(--ink);letter-spacing:-0.01em}
+  .notes .tag-sub{font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:3px 0 0}
+  .notes .hiw{margin-top:8px;font-size:12px;line-height:1.5;color:var(--sub);text-wrap:pretty}
+  .notes b{color:var(--ink);font-weight:600}
+
+  .timeline{position:fixed;bottom:18px;left:14px;right:306px;z-index:1000;padding:10px 14px}
+  .tl-top{display:flex;align-items:center;gap:12px;margin-bottom:7px}
+  .play-btn{background:var(--ink);border:1px solid var(--ink);color:var(--bg);padding:7px 14px;cursor:pointer;
+    font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;min-width:86px}
+  .play-btn:hover{background:var(--phd);border-color:var(--phd)}
+  .tl-h{display:flex;justify-content:space-between;align-items:center;flex:1;
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.06em;color:var(--sub)}
+  .tl-h .cur{color:var(--accent);font-weight:600}
+  .timeline input[type=range]{width:100%;accent-color:var(--accent)}
+
+  .load-overlay{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+  .load-overlay h2{font-family:"Fraunces","Source Serif 4",serif;font-size:22px;font-weight:500;letter-spacing:-0.01em;color:var(--ink)}
+  .load-overlay p{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);max-width:400px;text-align:center;line-height:1.6}
   .load-overlay input[type=file]{margin:12px 0}
-  .load-overlay button{background:#b77735;border:none;color:#fff;padding:10px 24px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600}
+  .load-overlay button{background:var(--ink);border:1px solid var(--ink);color:var(--bg);padding:10px 20px;cursor:pointer;
+    font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+
+  body.ui-hidden .ui-chrome{display:none!important}
   @media(max-width:700px){
-    .title-bar{left:16px;right:72px}.legend{left:16px;right:16px;top:84px;max-width:none}
-    .timeline{left:16px;right:16px;bottom:16px}.panel{left:16px;right:16px;top:auto;bottom:84px;width:auto;max-height:40vh}
+    .title-bar{left:14px;right:96px}
+    .title-bar h1 span{display:none}
+    .legend{left:14px;right:14px;top:80px;max-width:none}
+    .timeline{left:14px;right:14px;bottom:14px}.panel{left:14px;right:14px;top:auto;bottom:78px;width:auto;max-height:40vh}
   }
 </style>
 </head>
@@ -61,7 +95,7 @@
 <button class="ui-toggle" id="uiToggle" style="display:none">Hide UI</button>
 
 <div class="ui-chrome title-bar" style="display:none" id="titleBar">
-  <h1>Beaver Expansion Forecast</h1>
+  <span class="dot"></span><h1>Beaver expansion forecast <span>· 2010–2050 · moderate scenario</span></h1>
 </div>
 
 <div class="ui-chrome panel" style="display:none" id="sidePanel">
@@ -81,10 +115,10 @@
 </div>
 
 <div class="ui-chrome legend" style="display:none" id="legendBar">
-  <span><span class="ldot" style="background:#8c5a3c"></span>Observed active</span>
-  <span><span class="ldot" style="background:#a99b8c"></span>Failed</span>
-  <span><span class="ldot" style="background:#d79b49"></span>Simulated active</span>
-  <span><span class="ldot" style="background:#c6b19a"></span>Simulated failed</span>
+  <span><span class="ldot" style="background:#2f7d4f"></span>Observed active</span>
+  <span><span class="ldot" style="background:#9a8a76"></span>Failed</span>
+  <span><span class="ldot" style="background:#b77735"></span>Simulated active</span>
+  <span><span class="ldot" style="background:#c9b48e"></span>Simulated failed</span>
   <span><span class="ring"></span>New this year</span>
   <span><span class="lbound"></span>Forecast boundary</span>
 </div>
@@ -118,10 +152,10 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/
 // ============================================================
 const BOUNDARY_COORDS = [[[68.59357,-135.564216],[68.44854,-135.464282],[68.407541,-135.554757],[68.52909,-136.838352],[68.717306,-137.720802],[69.032549,-139.337649],[69.363748,-138.815106],[68.875979,-136.785396],[68.780102,-136.637289]]];
 const boundaryLayer = L.polygon(BOUNDARY_COORDS, {
-  color: "#8a7b63",
-  weight: 2,
-  opacity: 0.85,
-  dashArray: "5,4",
+  color: "#1a1a1a",
+  weight: 1.5,
+  opacity: 0.55,
+  dashArray: "4,4",
   fill: false,
   interactive: false
 }).addTo(map);
@@ -183,16 +217,16 @@ function render() {
 
     let color, fillOpacity;
     if (isFailed) {
-      color = isSim ? "#c6b19a" : "#a99b8c";
+      color = isSim ? "#c9b48e" : "#9a8a76";
       fillOpacity = 0.5;
     } else {
-      color = isSim ? "#d79b49" : "#8c5a3c";
+      color = isSim ? "#b77735" : "#2f7d4f";
       fillOpacity = 0.85;
     }
 
     const baseRadius = 5;
     const baseOpacity = isNew ? 1 : 0.6;
-    const ringColor = isNew ? "#5e3a1e" : color;   // darker ring for new dams (was #ffffff)
+    const ringColor = isNew ? "#1a1a1a" : color;   // ink ring marks dams new this year
     const marker = L.circleMarker([d.y, d.x], {
       radius: baseRadius,
       fillColor: color,
@@ -213,8 +247,8 @@ function render() {
 
     const failStr = isFinite(d.failure_year) ? d.failure_year : "—";
     marker.bindPopup(
-      `<div style="font-family:monospace;font-size:11px;line-height:1.6">
-        <strong style="color:#9f5b2d">${d.uid}</strong><br>
+      `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:#1a1a1a">
+        <strong style="color:#b77735">${d.uid}</strong><br>
         ${isSim ? "Simulated" : "Observed"} · ${d.state}<br>
         Born: ${d.birth_year} · Fails: ${failStr}
       </div>`
@@ -264,9 +298,7 @@ uiToggle.onclick = function() {
   document.body.classList.toggle("ui-hidden");
   this.textContent = document.body.classList.contains("ui-hidden") ? "Show UI" : "Hide UI";
 };
-if (window.matchMedia && window.matchMedia("(max-width:700px)").matches) {
-  document.body.classList.add("ui-hidden");
-}
+// UI chrome defaults ON at every size; the toggle is still there for a clean map.
 
 // Auto-load embedded moderate-scenario data on startup.
 initFromData(EMBEDDED_DATA);

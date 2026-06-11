@@ -66,7 +66,8 @@ const SOUNDSCAPE_CLUSTERS = [
     over: [['NOPI', 5.3], ['LISP', 4.4], ['GWTE', 4.3], ['LESA', 3.5], ['WISN', 2.9]] },
   { id: 'pullen',   name: 'Pullen Lake',          type: 'slump',
     sub: 'Slump complex near Pullen Lake',
-    lat: 69.2597, lon: -134.6536, n: 5, audio: null,
+    lat: 69.2597, lon: -134.6536, n: 5,
+    audio: 'audio/ITH-2-APU-4_20250616_024500.mp3', recDate: '2025-06-16 · 02:45',
     over: [['CANG', 3.6], ['GWFG', 3.1], ['SACR', 2.8], ['RTLO', 1.8], ['TUSW', 1.7]] },
   { id: 'at7',      name: "Richards Island",      type: 'slump',
     sub: 'Slump complex on Richards Island',
@@ -81,7 +82,8 @@ const SOUNDSCAPE_CLUSTERS = [
     over: [['HASP', 12.5], ['REDP', 1.8], ['WCSP', 1.6], ['AMRO', 1.5], ['WIPT', 1.0]] },
   { id: 'husky',    name: 'Husky Lake',          type: 'fire',
     sub: 'Recent tundra fire near Husky Lake',
-    lat: 69.0554, lon: -133.1302, n: 5, labelSide: 'right', audio: null,
+    lat: 69.0554, lon: -133.1302, n: 5, labelSide: 'right',
+    audio: 'audio/ITH-1-10-1_20240623_054500.mp3', recDate: '2024-06-23 · 05:45',
     over: [['LESA', 4.8], ['LEYE', 4.0], ['PALO', 3.7], ['LISP', 2.8], ['AMRO', 1.5]] },
 
   // Highway transects (rendered as subtle, unlabeled dots)
@@ -97,7 +99,8 @@ const SOUNDSCAPE_CLUSTERS = [
   { id: 't5', name: 'Transect 5', type: 'control', sub: 'Highway transect',
     lat: 68.6731, lon: -133.6041, n: 2, subtle: true, audio: null, over: [] },
   { id: 't6', name: 'Trail Valley', type: 'control', sub: 'Tundra controls near to Trail Valley',
-    lat: 68.7100, lon: -133.5411, n: 8, audio: null,
+    lat: 68.7100, lon: -133.5411, n: 8,
+    audio: 'audio/ITH-1-6-8_20240620_044500.mp3', recDate: '2024-06-20 · 04:45',
     over: [['AMGP', 4.3], ['ROPT', 4.3], ['WHIM', 3.7], ['YRWA', 2.9], ['LTJA', 3.5]] },
   { id: 't7', name: 'Transect 7', type: 'control', sub: 'Highway transect',
     lat: 68.7646, lon: -133.5552, n: 4, subtle: true, audio: null, over: [], under: [] },
@@ -171,12 +174,56 @@ function CorridorMap({ activeId, onPick }) {
     });
     mapRef.current = map;
 
-    // CARTO Voyager (free, no key) — warm, restrained
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap, © CARTO',
-      subdomains: 'abcd',
-      maxZoom: 18,
-    }).addTo(map);
+    // Basemap presets — all keyless. Each picks a tile URL + a CSS filter
+    // applied to .leaflet-tile-pane (set via data-basemap on the container).
+    const BASEMAPS = {
+      'esri-natgeo': {
+        label: 'Nat Geo',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+        opts: { maxZoom: 16, attribution: 'Tiles © Esri — National Geographic, DeLorme, NAVTEQ' },
+      },
+      'voyager': {
+        label: 'Voyager',
+        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        opts: { subdomains: 'abcd', maxZoom: 18, attribution: '© OpenStreetMap, © CARTO' },
+      },
+      'esri-imagery': {
+        label: 'Satellite',
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        opts: { maxZoom: 18, attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics' },
+      },
+    };
+    const DEFAULT_BASEMAP = 'voyager';
+
+    let currentLayer = null;
+    const setBasemap = (key) => {
+      const preset = BASEMAPS[key] || BASEMAPS[DEFAULT_BASEMAP];
+      if (currentLayer) map.removeLayer(currentLayer);
+      currentLayer = L.tileLayer(preset.url, preset.opts).addTo(map);
+      containerRef.current.setAttribute('data-basemap', key);
+    };
+    setBasemap(DEFAULT_BASEMAP);
+
+    // Small switcher control, bottom-left
+    const Switcher = L.Control.extend({
+      options: { position: 'bottomleft' },
+      onAdd() {
+        const div = L.DomUtil.create('div', 'ssm-basemap-switcher');
+        div.innerHTML = Object.entries(BASEMAPS).map(([k, v]) =>
+          `<button data-key="${k}"${k === DEFAULT_BASEMAP ? ' data-active="true"' : ''}>${v.label}</button>`
+        ).join('');
+        L.DomEvent.disableClickPropagation(div);
+        div.addEventListener('click', (e) => {
+          const btn = e.target.closest('button[data-key]');
+          if (!btn) return;
+          setBasemap(btn.dataset.key);
+          div.querySelectorAll('button').forEach(b => b.removeAttribute('data-active'));
+          btn.setAttribute('data-active', 'true');
+        });
+        return div;
+      },
+    });
+    map.addControl(new Switcher());
 
     // Fit to all cluster pins
     const bounds = L.latLngBounds(SOUNDSCAPE_CLUSTERS.map(c => [c.lat, c.lon]));
@@ -355,7 +402,52 @@ const Spectrogram = React.forwardRef(function Spectrogram({ audioRef, audioSrc, 
   const [duration, setDuration] = React.useState(0);
   const [status, setStatus] = React.useState('idle');
 
-  React.useImperativeHandle(ref, () => ({ ensureGraph: () => {} }), []);
+  // Non-destructive playback boost. Field ARU recordings sit low with
+  // headroom; we route the <audio> element through Web Audio and lift it
+  // ~+8 dB, then pass a limiter so the loudest peaks can't clip/distort.
+  // The source files are never modified.
+  const PLAYBACK_GAIN = 2.5;        // ≈ +8 dB
+  const playGraphRef = React.useRef(null);
+
+  React.useImperativeHandle(ref, () => ({
+    ensureGraph: () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      // Already built for this element — just make sure the context is running.
+      if (playGraphRef.current) {
+        if (playGraphRef.current.ctx.state === 'suspended') playGraphRef.current.ctx.resume();
+        return;
+      }
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AC();
+        const src = ctx.createMediaElementSource(audio);
+        const gain = ctx.createGain();
+        gain.gain.value = PLAYBACK_GAIN;
+        // Compressor configured as a transparent brick-wall limiter so the
+        // boost adds loudness without introducing clipping artifacts.
+        const limiter = ctx.createDynamicsCompressor();
+        limiter.threshold.value = -1.5;
+        limiter.knee.value = 0;
+        limiter.ratio.value = 20;
+        limiter.attack.value = 0.002;
+        limiter.release.value = 0.2;
+        src.connect(gain);
+        gain.connect(limiter);
+        limiter.connect(ctx.destination);
+        ctx.resume();
+        playGraphRef.current = { ctx, src, gain, limiter };
+      } catch (e) {
+        // createMediaElementSource throws if already wired — safe to ignore.
+      }
+    }
+  }), [audioRef]);
+
+  // Tear down the boost graph when the panel unmounts.
+  React.useEffect(() => () => {
+    const g = playGraphRef.current;
+    if (g && g.ctx && g.ctx.state !== 'closed') { try { g.ctx.close(); } catch (e) {} }
+  }, []);
 
   // Cornell-style display constants
   const VIEW_W = 320;

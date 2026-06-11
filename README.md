@@ -12,6 +12,12 @@ Static site, no build step. HTML + CSS + Babel-in-browser JSX.
 - `publications.html` — full publication list
 - `field-notes.html` — photo log + iNat / xeno-canto feeds
 
+## Shared sources (edit these, not per-page copies)
+
+- `tokens.css` — design tokens (palette). Every page and widget loads it; `beaver-shared.css` imports it.
+- `site-nav.js` — nav tab list. Consumed by `BvHeader` (content pages) and the index nameplate menu.
+- `beaver-shared.css` — shared layout/type styles for content pages.
+
 ## Local preview
 
 Any static server works. Easiest: `python3 -m http.server` from the repo root, then open <http://localhost:8000>.

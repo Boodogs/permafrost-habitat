@@ -15,14 +15,16 @@ const GH_PARAS = [
 const GH_PARTNERS = "Environment and Climate Change Canada (Canadian Wildlife Service) · Alaska Department of Fish and Game · Vuntut Gwitchin";
 
 /* Posterior distribution chart — approximate the exponential-decay shape
-   from the poster (abundance of males, x-axis 0–2000). */
+   from the poster (abundance of mature individuals, x-axis 0–2000).
+   The viewBox is sized and labelled so the chart can scale to ANY width
+   (down to ~300px on a phone) and stay legible — no horizontal scroll. */
 function PosteriorChart() {
-  const W = 560,H = 220,PAD = { top: 16, right: 20, bottom: 40, left: 50 };
+  const W = 460,H = 250,PAD = { top: 30, right: 16, bottom: 46, left: 30 };
   const pw = W - PAD.left - PAD.right;
   const ph = H - PAD.top - PAD.bottom;
   const maxX = 2000;
 
-  // Approximate posterior: gamma-like shape, mode near 60, long tail
+  // Approximate posterior: gamma-like shape, mode near 80, long tail
   const rate = 0.012;
   const points = [];
   const N = 100;
@@ -52,52 +54,52 @@ function PosteriorChart() {
   shadePts.map(([x, y]) => `L ${x} ${y}`).join(' ') +
   ` L ${toSvg([cutoff, 0])[0]} ${PAD.top + ph} Z`;
 
-  // Tick marks
-  const xTicks = [0, 250, 500, 1000, 1500, 2000];
+  const x250 = toSvg([250, 0])[0];
+  const x1000 = toSvg([1000, 0])[0];
+
+  // Tick marks — sparse so labels never collide when scaled down
+  const xTicks = [0, 500, 1000, 1500, 2000];
 
   return (
     <div className="bv-embed-wrap">
-      <div className="bv-chart-scroll">
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: W, display: 'block', fontFamily: "'JetBrains Mono', monospace" }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: W, display: 'block', margin: '0 auto', fontFamily: "'JetBrains Mono', monospace" }}>
         {/* Grid lines */}
         {xTicks.map((v) => {
           const x = PAD.left + v / maxX * pw;
-          return <line key={v} x1={x} y1={PAD.top} x2={x} y2={PAD.top + ph} stroke="#e6dcc6" strokeWidth="0.5" />;
+          return <line key={v} x1={x} y1={PAD.top} x2={x} y2={PAD.top + ph} stroke="#e6dcc6" strokeWidth="0.6" />;
         })}
 
         {/* Shaded area: ≤250 */}
         <path d={shadeD} fill="rgba(47,125,79,0.2)" />
 
         {/* Full distribution */}
-        <path d={areaD} fill="none" stroke="#2f7d4f" strokeWidth="1.5" />
+        <path d={areaD} fill="none" stroke="#2f7d4f" strokeWidth="2" />
 
-        {/* 250 annotation */}
-        <line x1={toSvg([250, 0])[0]} y1={PAD.top} x2={toSvg([250, 0])[0]} y2={PAD.top + ph} stroke="#2f7d4f" strokeWidth="1" strokeDasharray="4,3" />
-        <text x={toSvg([250, 0])[0]} y={PAD.top - 4} textAnchor="middle" fill="#2f7d4f" fontSize="9" fontWeight="500">≤ 250 (68%)</text>
+        {/* ≤250 annotation — left-anchored so it can't clip the left edge */}
+        <line x1={x250} y1={PAD.top} x2={x250} y2={PAD.top + ph} stroke="#2f7d4f" strokeWidth="1.2" strokeDasharray="4,3" />
+        <text x={x250 + 5} y={PAD.top - 16} textAnchor="start" fill="#2f7d4f" fontSize="13" fontWeight="600">≤ 250</text>
+        <text x={x250 + 5} y={PAD.top - 3} textAnchor="start" fill="#2f7d4f" fontSize="11">68% prob.</text>
 
-        {/* 1000 annotation */}
-        <line x1={toSvg([1000, 0])[0]} y1={PAD.top + 10} x2={toSvg([1000, 0])[0]} y2={PAD.top + ph} stroke="#b77735" strokeWidth="1" strokeDasharray="4,3" />
-        <text x={toSvg([1000, 0])[0]} y={PAD.top + 6} textAnchor="middle" fill="#b77735" fontSize="9" fontWeight="500">≤ 1,000 (99%)</text>
+        {/* ≤1,000 annotation */}
+        <line x1={x1000} y1={PAD.top} x2={x1000} y2={PAD.top + ph} stroke="#b77735" strokeWidth="1.2" strokeDasharray="4,3" />
+        <text x={x1000 + 5} y={PAD.top - 16} textAnchor="start" fill="#b77735" fontSize="13" fontWeight="600">≤ 1,000</text>
+        <text x={x1000 + 5} y={PAD.top - 3} textAnchor="start" fill="#b77735" fontSize="11">99% prob.</text>
 
         {/* X axis */}
-        <line x1={PAD.left} y1={PAD.top + ph} x2={PAD.left + pw} y2={PAD.top + ph} stroke="#1a1a1a" strokeWidth="1" />
+        <line x1={PAD.left} y1={PAD.top + ph} x2={PAD.left + pw} y2={PAD.top + ph} stroke="#1a1a1a" strokeWidth="1.2" />
         {xTicks.map((v) => {
           const x = PAD.left + v / maxX * pw;
+          const anchor = v === 0 ? 'start' : v === maxX ? 'end' : 'middle';
           return (
             <g key={`t${v}`}>
-              <line x1={x} y1={PAD.top + ph} x2={x} y2={PAD.top + ph + 4} stroke="#1a1a1a" strokeWidth="1" />
-              <text x={x} y={PAD.top + ph + 16} textAnchor="middle" fill="#555" fontSize="9">{v.toLocaleString()}</text>
+              <line x1={x} y1={PAD.top + ph} x2={x} y2={PAD.top + ph + 5} stroke="#1a1a1a" strokeWidth="1.2" />
+              <text x={x} y={PAD.top + ph + 18} textAnchor={anchor} fill="#555" fontSize="12">{v.toLocaleString()}</text>
             </g>);
 
         })}
-        <text x={PAD.left + pw / 2} y={H - 4} textAnchor="middle" fill="#555" fontSize="9">Abundance of mature individuals</text>
-
-        {/* Y axis label */}
-        <text x={12} y={PAD.top + ph / 2} textAnchor="middle" fill="#555" fontSize="9" transform={`rotate(-90, 12, ${PAD.top + ph / 2})`}>Posterior density</text>
+        <text x={PAD.left + pw / 2} y={H - 6} textAnchor="middle" fill="#555" fontSize="12.5">Abundance of mature individuals</text>
       </svg>
-      </div>
       <div className="bv-embed-cap">
-        <span className="label">Fig. 1</span>
         <span>Posterior estimate of Grey-headed Chickadee abundance in Canada. The shaded region shows the 68% probability that ≤ 250 mature individuals remain.</span>
       </div>
     </div>);

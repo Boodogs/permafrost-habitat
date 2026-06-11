@@ -23,7 +23,7 @@ const BHA_PARAS = {
 // ---------------------------------------------------------------------
 // Embed — points at the published GEE App URL (or local mock).
 // ---------------------------------------------------------------------
-function BHAEmbed({ url, height = 620, label = "Fig. 1" }) {
+function BHAEmbed({ url, height = 620, label = "" }) {
   const isLocal = !url || url.indexOf('users.earthengine.app') === -1;
   return (
     <div className="bv-embed-wrap">
@@ -63,7 +63,7 @@ function BHAEmbed({ url, height = 620, label = "Fig. 1" }) {
         
       </div>
       <div className="bv-embed-cap">
-        <span className="label">{label}</span>
+        {label && <span className="label">{label}</span>}
         <span>
           {isLocal ?
           <>Local preview. Paste your published Earth Engine URL in <b>Tweaks → GEE App URL</b>.</> :

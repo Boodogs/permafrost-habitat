@@ -1,6 +1,7 @@
 # Build/scratch artifacts — not part of the published site
 uploads/
 _drafts/
+_export-recent/
 screenshots/
 scraps/
 .design-canvas.state.json

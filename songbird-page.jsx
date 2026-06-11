@@ -30,58 +30,6 @@ function SbHeroPhoto({ caption = "Retrogressive thaw slump draining into a tundr
 
 }
 
-/* Widget placeholder — species × disturbance heatmap with spectrogram strip. */
-function SbEmbedPlaceholder() {
-  const species = [
-  'Lapland Longspur', 'Snow Bunting', 'American Pipit',
-  'Savannah Sparrow', 'White-crowned Sparrow', 'American Tree Sparrow',
-  'Common Redpoll', 'Yellow Warbler'];
-  const sites = ['Slump', 'Drained lake', 'Burn', 'Control'];
-  const seed = (i, j) => (Math.sin(i * 13.3 + j * 7.1) + 1) / 2;
-
-  return (
-    <div className="bv-embed-wrap">
-      <div className="sb-widget">
-        <div className="sb-widget-bar">
-          <div className="sb-widget-title">Acoustic widget · placeholder</div>
-          <div className="sb-widget-controls">
-            <span className="sb-pill">▶ play</span>
-            <span className="sb-pill">site filter</span>
-            <span className="sb-pill">2021 → 2026</span>
-          </div>
-        </div>
-        <div className="sb-widget-body">
-          <div className="sb-spec">
-            {Array.from({ length: 80 }).map((_, i) => {
-              const h = 18 + Math.abs(Math.sin(i * 0.31 + 1.7) * 28) + Math.abs(Math.cos(i * 0.13) * 18);
-              return <div key={i} className="sb-spec-bar" style={{ height: `${h}px` }} />;
-            })}
-          </div>
-          <div className="sb-heat">
-            <div className="sb-heat-corner"></div>
-            {sites.map((s) => <div key={s} className="sb-heat-col-h">{s}</div>)}
-            {species.map((sp, i) =>
-            <React.Fragment key={sp}>
-                <div className="sb-heat-row-h">{sp}</div>
-                {sites.map((site, j) => {
-                const v = seed(i, j);
-                const op = 0.08 + v * 0.85;
-                return <div key={site} className="sb-heat-cell" style={{ background: `rgba(47,125,79,${op.toFixed(3)})` }} />;
-              })}
-              </React.Fragment>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="bv-embed-cap">
-        <span className="label">Fig. 1 (planned)</span>
-        <span>Acoustic explorer — relative abundance of detected species across disturbance types, with a hover-to-play spectrogram strip of representative recordings.</span>
-        <span className="arrow">↳ widget in development; the placeholder shows the intended shape.</span>
-      </div>
-    </div>);
-
-}
-
 /* Species shifts under disturbance — the headline result.
    Top 10 species with the largest positive and negative deltas in
    detection rate (disturbed minus control). */
@@ -182,119 +130,68 @@ function SbSpeciesMontage() {
 }
 
 function SbShiftsChart() {
-  const data = SB_SHIFTS;
-  const W = 880;
-  const ROW = 18;
-  const PAD = { top: 48, right: 48, bottom: 28, left: 200 };
-  const H = PAD.top + data.length * ROW + PAD.bottom;
-  const innerW = W - PAD.left - PAD.right;
+  const POS = 'var(--accent)'; // rust for shrub/increase (more at disturbed)
+  const NEG = 'var(--phd)';    // green for tundra/decrease (more at controls)
 
-  const maxAbs = Math.max(...data.map((d) => Math.abs(d.d)));
-  const domain = Math.ceil(maxAbs * 10) / 10; // round up to nearest 0.1
-  const x0 = PAD.left + innerW / 2; // x of zero
-  const xScale = (v) => x0 + v / domain * (innerW / 2);
+  const increases = SB_SHIFTS.filter((d) => d.d > 0).sort((a, b) => b.d - a.d);
+  const decreases = SB_SHIFTS.filter((d) => d.d < 0).sort((a, b) => a.d - b.d);
+  const maxAbs = Math.max(...SB_SHIFTS.map((d) => Math.abs(d.d)));
+  const domain = Math.ceil(maxAbs * 10) / 10; // shared scale across both columns
 
-  // Tick stops every 0.1 across the domain
-  const ticks = [];
-  for (let v = -domain; v <= domain + 0.0001; v += 0.1) {
-    ticks.push(Math.round(v * 10) / 10);
-  }
-
-  const POS = 'var(--phd)'; // green for shrub/increase
-  const NEG = 'var(--accent)'; // rust for tundra/decrease
+  const Column = ({ rows, color, sign }) => (
+    <div className="sb-shifts-col">
+      {rows.map((d) => {
+        const w = (Math.abs(d.d) / domain) * 100;
+        return (
+          <div className="sb-shifts-row" key={d.sp}>
+            <div className="sb-shifts-sp">{d.sp}</div>
+            <div className="sb-shifts-track">
+              <div className="sb-shifts-bar" style={{ background: color, width: `${w}%` }}></div>
+            </div>
+            <div className="sb-shifts-val" style={{ color }}>
+              {Math.abs(d.d).toFixed(2)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 
   return (
     <figure className="bv-embed-wrap" style={{ margin: '0 auto', maxWidth: 720 }}>
-      <div className="sb-shifts-chart" style={{
-        border: '1.5px solid var(--ink)',
-        background: 'var(--paper)',
-        padding: '20px 22px 6px'
-      }}>
-        <div className="sb-shifts-head" style={{
-          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-          gap: 18, marginBottom: 14, flexWrap: 'wrap'
-        }}>
+      <div className="sb-shifts-chart">
+        <div className="sb-shifts-head">
           <div>
-            <div className="mono sb-shifts-kicker" style={{
+            <div className="mono" style={{
               fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
               color: 'var(--accent)', fontWeight: 600
             }}>Top 10 increases · Top 10 decreases</div>
-            <div className="sb-shifts-title" style={{
+            <div style={{
               fontFamily: "'Source Serif 4', serif", fontSize: 17,
               fontWeight: 500, marginTop: 4
             }}>Species shifts under disturbance</div>
           </div>
-          <div className="sb-shifts-legend" style={{ display: 'flex', gap: 18, fontSize: 12, color: 'var(--sub)' }}>
-            <span><span style={{
-                display: 'inline-block', width: 12, height: 12, background: POS,
-                verticalAlign: 'middle', marginRight: 6
-              }}></span>more at disturbed</span>
-            <span><span style={{
-                display: 'inline-block', width: 12, height: 12, background: NEG,
-                verticalAlign: 'middle', marginRight: 6
-              }}></span>more at control</span>
-          </div>
         </div>
 
-        <div className="bv-chart-scroll">
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}
-        role="img" aria-label="Bar chart of species detection-rate shifts under permafrost disturbance">
-          {/* Vertical gridlines on tick stops */}
-          {ticks.map((t, i) =>
-          <line key={`g${i}`} x1={xScale(t)} x2={xScale(t)}
-          y1={PAD.top - 12} y2={H - PAD.bottom + 4}
-          stroke={t === 0 ? 'var(--ink)' : 'var(--hatch)'}
-          strokeWidth={t === 0 ? 1.2 : 0.6} />
-          )}
+        <div className="sb-shifts-grid">
+          <div className="sb-shifts-colhead" style={{ color: POS, gridArea: 'h1' }}>
+            <span className="sb-shifts-dot" style={{ background: POS }}></span>
+            More at disturbed
+          </div>
+          <div style={{ gridArea: 'c1' }}><Column rows={increases} color={POS} sign="+" /></div>
+          <div className="sb-shifts-colhead" style={{ color: NEG, gridArea: 'h2' }}>
+            <span className="sb-shifts-dot" style={{ background: NEG }}></span>
+            More at controls
+          </div>
+          <div style={{ gridArea: 'c2' }}><Column rows={decreases} color={NEG} sign="-" /></div>
+        </div>
 
-          {/* Tick labels (top + bottom) */}
-          {ticks.map((t, i) =>
-          <text key={`tt${i}`} x={xScale(t)} y={PAD.top - 18}
-          textAnchor="middle" fontFamily="'JetBrains Mono', monospace"
-          fontSize={10} fill="var(--sub)">{t > 0 ? `+${t.toFixed(1)}` : t.toFixed(1)}</text>
-          )}
-
-          {/* Axis title */}
-          <text x={x0} y={H - 6} textAnchor="middle"
-          fontFamily="'Source Serif 4', serif" fontStyle="italic"
-          fontSize={12} fill="var(--sub)">
-            Δ detection rate (disturbed − control)
-          </text>
-
-          {/* Bars + labels */}
-          {data.map((d, i) => {
-            const y = PAD.top + i * ROW + 4;
-            const bw = Math.abs(d.d) / domain * (innerW / 2);
-            const bx = d.d >= 0 ? x0 : x0 - bw;
-            const fill = d.d >= 0 ? POS : NEG;
-            return (
-              <g key={d.sp}>
-                {/* Species label */}
-                <text x={PAD.left - 12} y={y + ROW * 0.6}
-                textAnchor="end" fontFamily="'Source Serif 4', serif"
-                fontSize={12.5} fill="var(--ink)">
-                  {d.sp}
-                </text>
-                {/* Bar */}
-                <rect x={bx} y={y} width={bw} height={ROW - 6}
-                fill={fill} opacity={0.92} />
-                {/* Value annotation */}
-                <text x={d.d >= 0 ? bx + bw + 6 : bx - 6}
-                y={y + ROW * 0.6}
-                textAnchor={d.d >= 0 ? 'start' : 'end'}
-                fontFamily="'JetBrains Mono', monospace"
-                fontSize={10} fill="var(--sub)">
-                  {d.d > 0 ? `+${d.d.toFixed(2)}` : d.d.toFixed(2)}
-                </text>
-              </g>);
-
-          })}
-        </svg>
+        <div className="sb-shifts-axis-title">
+          Bar length = |Δ detection rate (disturbed − control)|, shared scale (max {domain.toFixed(1)})
         </div>
       </div>
       <figcaption className="bv-embed-cap">
-        <span className="label"></span>
-        <span>Per-species change in detection rate between disturbed and paired control sites. Positive values mean the species was heard more often at disturbed sites; negative, more often at controls.</span>
+        <span>Per-species change in detection rate between disturbed and paired control sites. Rusts were heard more often at disturbed sites; greens, more often at controls.</span>
       </figcaption>
     </figure>);
 
@@ -310,12 +207,12 @@ function SbCiteContact() {
         <div style={{ fontSize: 14, lineHeight: 1.5 }}>
           <a href="https://portal.wildtrax.ca/aru/4090" target="_blank" rel="noopener">WildTrax · bird recorder project 4090</a>
           {' '}
-          <span className="mono" style={{ fontSize: 11, color: 'var(--sub)', marginLeft: 6, padding: '2px 8px', border: '1px solid var(--sub)', borderRadius: 99, letterSpacing: '0.06em', textTransform: 'uppercase' }}>private — request access</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--sub)', marginLeft: 6, padding: '2px 8px', border: '1px solid var(--sub)', borderRadius: 99, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap', display: 'inline-block' }}>private — request access</span>
         </div>
         <div style={{ fontSize: 14, lineHeight: 1.5, marginTop: 6 }}>
           <a href="https://portal.wildtrax.ca/aru/3371" target="_blank" rel="noopener">WildTrax · bird recorder project 3371</a>
           {' '}
-          <span className="mono" style={{ fontSize: 11, color: 'var(--sub)', marginLeft: 6, padding: '2px 8px', border: '1px solid var(--sub)', borderRadius: 99, letterSpacing: '0.06em', textTransform: 'uppercase' }}>private — request access</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--sub)', marginLeft: 6, padding: '2px 8px', border: '1px solid var(--sub)', borderRadius: 99, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap', display: 'inline-block' }}>private — request access</span>
         </div>
       </div>
       <div>

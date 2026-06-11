@@ -34,11 +34,32 @@
 <style>
   body { margin: 0; background: #f7f1e6; }
 
-  /* Leaflet basemap — sepia tint to match paper palette */
-  .ssm-leaflet { width: 100%; height: 100%; background: #ece4cf; }
-  .ssm-leaflet .leaflet-tile-pane { filter: sepia(.22) saturate(.85) contrast(.95) brightness(1.02); }
+  /* Leaflet basemap — per-basemap filters via data-basemap attr */
+  .ssm-leaflet { width: 100%; height: 100%; background: #ece4cf; position: relative; }
+  .ssm-leaflet[data-basemap="voyager"] .leaflet-tile-pane,
+  .ssm-leaflet[data-basemap="esri-natgeo"] .leaflet-tile-pane {
+    filter: sepia(.18) saturate(.9) contrast(.95) brightness(1.02);
+  }
+  .ssm-leaflet[data-basemap="esri-imagery"] .leaflet-tile-pane {
+    filter: saturate(.7) contrast(1.05) brightness(.95);
+  }
   .ssm-leaflet .leaflet-control-attribution { font-family: 'JetBrains Mono', monospace; font-size: 9px; background: rgba(247,241,230,0.85); }
   .ssm-leaflet .leaflet-bar a { background: #f7f1e6; color: #1a1a1a; border-color: rgba(26,26,26,0.4); }
+  /* basemap switcher */
+  .ssm-basemap-switcher {
+    display: flex; gap: 2px; padding: 3px; background: rgba(247,241,230,0.92);
+    border: 1px solid rgba(26,26,26,0.4); border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .ssm-basemap-switcher button {
+    background: transparent; border: none; padding: 4px 8px; cursor: pointer;
+    font: inherit; color: #1a1a1a; letter-spacing: .02em;
+  }
+  .ssm-basemap-switcher button:hover { background: rgba(26,26,26,0.06); }
+  .ssm-basemap-switcher button[data-active="true"] {
+    background: #1a1a1a; color: #f7f1e6;
+  }
   .ssm-town-label > div {
     font-family: 'Source Serif 4', Georgia, serif;
     font-size: 11px; font-weight: 600; color: #1a1a1a;
@@ -46,6 +67,81 @@
     white-space: nowrap;
   }
   .ssm-pin-icon { background: transparent; border: none; }
+
+  /* Species shifts chart — compact two-column tornado. */
+  .sb-shifts-chart {
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    padding: 18px 22px 16px;
+  }
+  .sb-shifts-head { margin-bottom: 16px; }
+  .sb-shifts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "h1 h2" "c1 c2";
+    column-gap: 32px;
+    row-gap: 8px;
+    align-items: start;
+  }
+  .sb-shifts-colhead {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 600;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--hatch);
+  }
+  .sb-shifts-dot {
+    display: inline-block; width: 8px; height: 8px;
+  }
+  .sb-shifts-col { display: flex; flex-direction: column; gap: 4px; }
+  .sb-shifts-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 70px 38px;
+    align-items: center;
+    gap: 8px;
+    min-height: 18px;
+  }
+  .sb-shifts-sp {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sb-shifts-track {
+    position: relative; height: 8px;
+    background: rgba(0,0,0,0.04);
+  }
+  .sb-shifts-bar {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    opacity: 0.92;
+  }
+  .sb-shifts-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .sb-shifts-axis-title {
+    margin-top: 14px;
+    font-family: 'Source Serif 4', serif; font-style: italic;
+    font-size: 11.5px; color: var(--sub);
+    text-align: center;
+  }
+  /* On narrow screens, columns stack but rows stay single-line + compact */
+  @media (max-width: 560px) {
+    .sb-shifts-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas: "h1" "c1" "h2" "c2";
+      row-gap: 4px; column-gap: 0;
+    }
+    .sb-shifts-colhead[style*="h2"] { margin-top: 14px; }
+    .sb-shifts-row { grid-template-columns: minmax(0, 1fr) 60px 36px; }
+    .sb-shifts-sp { font-size: 12px; }
+  }
 </style>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -54,6 +150,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+<script src="site-nav.js"></script>
 <script type="text/babel" src="beaver-variants.jsx"></script>
 <script type="text/babel" src="soundscape-map.jsx"></script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>

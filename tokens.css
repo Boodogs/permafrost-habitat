@@ -1,0 +1,20 @@
+/* ============================================================
+   tokens.css — design tokens, single source of truth.
+   Loaded by every page and widget:
+     · beaver-shared.css @imports it (all content pages)
+     · index.html links it directly
+     · widgets/* link it as ../tokens.css
+   Edit the palette HERE and nowhere else.
+   ============================================================ */
+:root {
+  --ink: #1a1a1a;     /* primary text, rules, borders */
+  --sub: #555;        /* secondary text */
+  --faint: #999;      /* tertiary / disabled */
+  --bg: #f7f1e6;      /* paper-cream page background */
+  --paper: #fff;      /* card / panel surface */
+  --hatch: #e6dcc6;   /* hairlines, dashed fills */
+  --accent: #b77735;  /* rust — links, projects, simulated */
+  --phd: #2f7d4f;     /* green — PhD chapters, active dams */
+  --rule: #1a1a1a;    /* heavy rules */
+  --fail: #9a8a76;    /* failed / inactive markers */
+}
